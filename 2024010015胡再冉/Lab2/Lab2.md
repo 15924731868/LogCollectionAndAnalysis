@@ -359,14 +359,13 @@ sudo ls -ld /var/log/journal /run/log/journal
 > 记录：`/var/log/journal/` 的检查结果为 __目录存在____；`/run/log/journal/` 的检查结果为 _目录存在_____。
 
 **在此填写日志盘点表**：根据刚才的目录和类型检查，登记 **5 个真实存在的日志文件或目录** 即可。不存在的路径不计入这 5 项；命令名也不能当作文件路径。可从 3.1 节查阅用途和读取工具，也可选用其他真实日志。
-
 | 实际路径 | 主要用途 | 文本、二进制还是目录 | 使用什么命令读取 |
 | :--- | :--- | :--- | :--- |
-| | | | |
-| | | | |
-| | | | |
-| | | | |
-| | | | |
+| /var/log/syslog | 系统综合日志，记录各类服务运行消息 | 文本 | sudo tail /var/log/syslog |
+| /var/log/auth.log | SSH登录、sudo等身份认证事件日志 | 文本 | sudo tail /var/log/auth.log |
+| /var/log/kern.log | 内核、硬件驱动相关消息 | 文本 | sudo tail /var/log/kern.log |
+| /var/log/dpkg.log | 软件包安装、卸载、更新记录 | 文本 | sudo tail /var/log/dpkg.log |
+| /var/log/journal/ | systemd持久化二进制日志目录 | 目录（二进制日志） | journalctl |
 
 **先读取文本日志**
 
@@ -426,7 +425,7 @@ date
 把下面的起止时间换成实验当天的真实范围，再执行：
 
 ```bash
-sudo journalctl --since "2026-09-09 08:00:00" --until "2026-09-09 12:00:00" --no-pager
+sudo journalctl --since "2026-09-16 20:00:00" --until "2026-09-16 20:00:00" --no-pager
 ```
 
 `--since` 指定起点，`--until` 指定终点，日期时间中的空格要保留在引号内。例如本次操作发生在 09:20，可以查询当天 09:00 至 09:30。若无结果，先核对时间范围和时区。
