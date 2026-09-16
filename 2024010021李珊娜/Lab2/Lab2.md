@@ -144,7 +144,7 @@ systemctl is-active rsyslog
 
 期望输出 `active`。SSH 服务和端口会在 3.3 节检查。
 
-> 记录：rsyslog 的实际运行状态为 __active__。
+> 记录：rsyslog 的实际运行状态为 ___active_。
 
 **检查系统时间**
 
@@ -228,7 +228,7 @@ hostname -I
 
 这里的 `-I` 是大写字母 `I`，不是小写 `i`，也不是数字 `1`。输出可能包含多个地址，应选择与 VMware NAT 网段对应的私有 IPv4 地址，例如 `192.168.80.128`，不要填写 `127.0.0.1`。把这个地址记下来，后面填写在 SSH 命令的 `@` 右边。
 
-> 记录：本次 SSH 连接使用的 Ubuntu 虚拟机 IP 为 192.168246.128______。
+> 记录：本次 SSH 连接使用的 Ubuntu 虚拟机 IP 为 _192.168.246.128__。
 
 **第 3 条：确认 SSH 服务正在运行**
 
@@ -294,7 +294,7 @@ whoami
 
 输出应是 Ubuntu 用户名。
 
-> 记录：SSH 登录后的用户名为 ___lsn___。
+> 记录：SSH 登录后的用户名为 lsn。
 
 再查看主机名：
 
@@ -356,17 +356,17 @@ sudo ls -ld /var/log/journal /run/log/journal
 
 `ls -d` 列出目录本身。保留实际存在的路径；某个路径提示 `No such file or directory` 时，表示该目录不存在。目录中是否有可读 journal 记录，会在 3.5 节继续确认。
 
-> 记录：`/var/log/journal/` 的检查结果为 _____存在，是目录_；`/run/log/journal/` 的检查结果为 ___存在，是目录___。
+> 记录：`/var/log/journal/` 的检查结果为 _存在__，是目录_；`/run/log/journal/` 的检查结果为 ___存在，是目录___。
 
 **在此填写日志盘点表**：根据刚才的目录和类型检查，登记 **5 个真实存在的日志文件或目录** 即可。不存在的路径不计入这 5 项；命令名也不能当作文件路径。可从 3.1 节查阅用途和读取工具，也可选用其他真实日志。
 
 | 实际路径 | 主要用途 | 文本、二进制还是目录 | 使用什么命令读取 |
 | :--- | :--- | :--- | :--- |
-| | | | |
-| | | | |
-| | | | |
-| | | | |
-| | | | |
+|/var/log/syslog | 系统与服务的综合 syslog 消息| 文本（file 识别为 Unicode text, UTF-8 text）| sudo tail / sudo grep|
+| /var/log/auth.log|SSH、sudo、登录认证与授权事件 | 文本（file 识别为 ASCII text）|sudo tail / sudo grep |
+|/var/log/kern.log |内核、驱动、硬件和 OOM 等消息 | 文本|sudo tail；也可用 journalctl -k |
+| /var/log/dpkg.log| 软件包安装、升级、删除和状态变化| 文本| sudo tail / sudo grep|
+| /var/log/journal/| systemd journal 数据|二进制日志目录 |journalctl |
 
 **先读取文本日志**
 
@@ -413,7 +413,7 @@ sudo journalctl -n 30 --no-pager
 
 `-n 30` 只显示最新的 30 条记录。默认按时间从旧到新排列，可以看到不同程序或服务的消息；这里只需任选一条阅读，不用逐条分析。
 
-> 记录：选取的一条日志来自哪个程序或服务？___sudo___；记录了什么事件？___用户 lsn 在 pts/3 终端、/home/lsn 下，以 root 权限执行了 `ls -lh /var/log`___。
+> 记录：选取的一条日志来自哪个程序或服务？___sudo___；记录了什么事件？___用户 lsn 在 pts/3 终端、/home/lsn 下，以 root 权限执行了 ls -lh /var/log___。
 
 **查询二：指定时间范围**
 
@@ -431,7 +431,7 @@ sudo journalctl --since "2026-09-09 08:00:00" --until "2026-09-09 12:00:00" --no
 
 `--since` 指定起点，`--until` 指定终点，日期时间中的空格要保留在引号内。例如本次操作发生在 09:20，可以查询当天 09:00 至 09:30。若无结果，先核对时间范围和时区。
 
-> 记录：实际查询起点为 ____2026-09-10 08:10:00__；终点为 ___2026-09-10 09:30:00__；观察到的事件或无记录情况为 ___有记录：sysstat-collect.service 启停、CRON 执行 debian-sa1 和 cron.hourly 定时任务、NetworkManager 睡眠唤醒后把 ens33 改为 ready 并取消 DHCP 租约、avahi-daemon 离开 mDNS 多播组___。
+> 记录：实际查询起点为 ____2026-09-10 08:10:00__；终点为 __2026-09-10 09:30:00___；观察到的事件或无记录情况为 ___有记录：sysstat-collect.service 启停、CRON 执行 debian-sa1 和 cron.hourly 定时任务、NetworkManager 睡眠唤醒后把 ens33 改为 ready 并取消 DHCP 租约、avahi-daemon 离开 mDNS 多播组___。
 
 **查询三：按严重程度筛选**
 
@@ -443,7 +443,7 @@ sudo journalctl -p warning -b --no-pager
 
 日志级别从严重到轻微依次为 `emerg`、`alert`、`crit`、`err`、`warning`、`notice`、`info`、`debug`。
 
-> 记录：是否查到匹配日志？___是___；其中一条的内容或无记录提示为 ____`systemd[1]: Dependency failed for sssd-nss.socket - SSSD NSS Service Responder socket.`__。
+> 记录：是否查到匹配日志？___是___；其中一条的内容或无记录提示为 ____systemd[1]: Dependency failed for sssd-nss.socket - SSSD NSS Service Responder socket._。
 
 保存 `imgs/lab2_journal_queries.png`，只需覆盖以上 **3 类查询**的命令和关键输出。可合理拼图，长输出保留代表性记录，无匹配记录时保留真实提示。
 
