@@ -413,8 +413,7 @@ sudo journalctl -n 30 --no-pager
 
 `-n 30` 只显示最新的 30 条记录。默认按时间从旧到新排列，可以看到不同程序或服务的消息；这里只需任选一条阅读，不用逐条分析。
 
-> 记录：选取的一条日志来自哪个程序或服务？__tracker-miner-fs-3.service____；记录了什么事件？__Tracker文件系统数据挖掘服务启动失败，数据库版本过低，进程异常退出____。
-
+> 记录：选取的一条日志来自哪个程序或服务？gnome-shell[2474]；记录了什么事件？Window manager warning: Overwriting existing binding of keysym 39 with keysym 39。
 **查询二：指定时间范围**
 
 先查看 Ubuntu 当前时间，用它确定包含本次实验的查询区间：
