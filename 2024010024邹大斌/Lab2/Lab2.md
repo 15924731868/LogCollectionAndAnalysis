@@ -364,7 +364,7 @@ sudo ls -ld /var/log/journal /run/log/journal
 | :--- | :--- | :--- | :--- |
 |/var/log/syslog | 系统全局日志| 文本文件| tail -n 20 /var/log/syslog|
 |/var/log/auth.log |认证登录日志 | 文本文件|tail /var/log/auth.log |
-|/var/log/kern.log |内核日志 |文本文件 |dmesg |
+|/var/log/kern.log |内核日志 |文本文件 | tail /var/log/kern.log|
 | /var/log/journal|systemd日志数据库 |目录 |journalctl |
 | /run/log/journal|临时日志目录 |目录 |journalctl |
 
@@ -431,7 +431,7 @@ sudo journalctl --since "2026-09-09 08:00:00" --until "2026-09-09 12:00:00" --no
 
 `--since` 指定起点，`--until` 指定终点，日期时间中的空格要保留在引号内。例如本次操作发生在 09:20，可以查询当天 09:00 至 09:30。若无结果，先核对时间范围和时区。
 
-> 记录：实际查询起点为 __2026-09-16 08:00:00____；终点为 __2026-09-16 12:00:00____；观察到的事件或无记录情况为 __No entries____。
+> 记录：实际查询起点为 __2026-09-16 23:20:00____；终点为 __2026-09-16 23:40:00____；观察到的事件或无记录情况为 __No entries____。
 
 **查询三：按严重程度筛选**
 
