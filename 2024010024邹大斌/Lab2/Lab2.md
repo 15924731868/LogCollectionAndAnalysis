@@ -362,11 +362,11 @@ sudo ls -ld /var/log/journal /run/log/journal
 
 | 实际路径 | 主要用途 | 文本、二进制还是目录 | 使用什么命令读取 |
 | :--- | :--- | :--- | :--- |
-| | | | |
-| | | | |
-| | | | |
-| | | | |
-| | | | |
+|/var/log/syslog | 系统全局日志| 文本文件| tail -n 20 /var/log/syslog|
+|/var/log/auth.log |认证登录日志 | 文本文件|tail /var/log/auth.log |
+|/var/log/kern.log |内核日志 |文本文件 |dmesg |
+| /var/log/journal|systemd日志数据库 |目录 |journalctl |
+| /run/log/journal|临时日志目录 |目录 |journalctl |
 
 **先读取文本日志**
 
