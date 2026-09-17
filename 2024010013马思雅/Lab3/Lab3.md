@@ -149,8 +149,8 @@ Windows / Git Bash                          Ubuntu 虚拟机
 
 | 认证事件 | 日志时间 | 尝试登录的账号 | 来源 IP | 结果关键词 | 日志来源 |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| 成功认证 |9月17日08：53：57 |msy |192.168.136.1 |Accepted password |journalctl/authentic.log |
-| 失败认证 |9月17日08：51：41 |student |192.168.136.1 |Failed password/user unknown |journalctl/authentic.log |
+| 成功认证 |9月17日08：53：57 |msy |192.168.136.1 |Accepted password |	/var/log/auth.log	|
+| 失败认证 |9月17日08：51：41 |student |192.168.136.1 |Failed password/user unknown |	/var/log/auth.log	 |
 
 保存 `imgs/lab3_ssh_auth.png`，保留 journal 与 `auth.log` 的查询命令及本人成功、失败记录。两处输出**合起来**能辨认本人一次成功认证和一次失败认证即可，不要求每一处都同时出现两条记录。
 
