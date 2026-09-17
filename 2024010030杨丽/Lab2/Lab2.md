@@ -306,7 +306,7 @@ hostname
 
 输出应是 Ubuntu 主机名。
 
-> 记录：SSH 登录后的主机名为 __yangli-VMware-Virtual-Platform___。
+> 记录：SSH 登录后的主机名为 __yangli-VMware-Virtual-Platform__。
 
 最后查看当前目录：
 
@@ -367,7 +367,7 @@ sudo ls -ld /var/log/journal /run/log/journal
   /var/log/syslog | 系统综合运行日志 | 文本 | cat/less/tail |
 |  /var/log/auth.log | 登录、sudo、认证安全日志 | 文本 |  cat/less/tail |
 | /var/log/wtmp | 成功登录历史 | 二进制 | last |
-| /var/log/btmp | 登录失败记录 | 二进制 | sudo lastb |
+| /var/log/btmp | 登录失败记录 | 二进制 | lastb |
 | /var/log/lastlog | 各用户最后登录信息 | 二进制 | lastlog |
 
 **先读取文本日志**
