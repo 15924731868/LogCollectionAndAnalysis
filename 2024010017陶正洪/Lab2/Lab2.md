@@ -362,11 +362,11 @@ sudo ls -ld /var/log/journal /run/log/journal
 
 | 实际路径 | 主要用途 | 文本、二进制还是目录 | 使用什么命令读取 |
 | :--- | :--- | :--- | :--- |
-| | | | |
-| | | | |
-| | | | |
-| | | | |
-| | | | |
+|/var/log/syslog |系统综合服务日志 | 文本|sudo tail / sudo grep |
+| /var/log/auth.log| 用户登录、sudo 认证事件|文本 | sudo tail / sudo grep|
+|/var/log/kern.log |内核、驱动硬件消息 |文本 |sudo tail |
+|/var/log/dpkg.log |软件包安装卸载记录 |文本 |sudo tail / sudo grep |
+|/var/log/wtmp| 登录注销重启历史|二进制文件 | last|
 
 **先读取文本日志**
 
