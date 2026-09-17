@@ -151,7 +151,7 @@ Windows / Git Bash                          Ubuntu 虚拟机
 | 认证事件 | 日志时间 | 尝试登录的账号 | 来源 IP | 结果关键词 | 日志来源 |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | 成功认证 | 2026-09-17T09:22:17.347924+08:00 | yangli | 192.168.161.1 | Accepted password | /var/log/auth.log |
-| 失败认证 | 2026-09-17T09:22:05.108864+08:00 | yangli | 192.168.161.1 | Accepted password | /var/log/auth.log |
+| 失败认证 | 2026-09-17T09:22:05.108864+08:00 | yangli | 192.168.161.1 | Failed password | /var/log/auth.log |
 
 保存 `imgs/lab3_ssh_auth.png`，保留 journal 与 `auth.log` 的查询命令及本人成功、失败记录。两处输出**合起来**能辨认本人一次成功认证和一次失败认证即可，不要求每一处都同时出现两条记录。
 
@@ -285,11 +285,11 @@ Sep  8 10:15:32 ubuntu lab3_read[2310]: student_id=20260001 name=张三 action=w
 | Where 在哪里 | 主机 yangli-VMware-Virtual-Platform |
 | Who 谁 | 日志标签 lab3_read；正文标识本人姓名杨丽，学号 2024010030 |
 | What 做了什么 | 使用 logger 工具向本机日志系统写入一条 write_test 测试消息 |
-| Result 结果如何 | 正文标记 result=success，journal 和 syslog 两处都能查到该日志 |
+| Result 结果如何 | 日志正文存在手动写入的自定义文本 result=success，并非系统判定的结果。|
 
 **用一两句话解释这个事件：**
 
-> 填写：2026 年 09 月 17 日 09:38:15，本人在 yangli-VMware-Virtual-Platform 主机上执行 logger 命令，写入带学号、姓名的自定义测试日志，日志标记测试结果为 success，记录成功存入系统日志。
+> 填写：2026 年 09 月 17 日 09:38:15，本人在 yangli-VMware-Virtual-Platform 主机上执行 logger 命令，写入包含学号、姓名的自定义测试日志，日志正文包含自定义文本 result=success，该字符串是本次写入日志时手动添加的内容，并非系统判定的执行结果。
 
 ### 4.2 一条 SSH 认证记录：`/var/log/auth.log`
 
