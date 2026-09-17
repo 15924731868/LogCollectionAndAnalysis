@@ -366,7 +366,7 @@ sudo ls -ld /var/log/journal /run/log/journal
 |/var/log/auth.log | 认证/安全日志|文本 |sudo less /var/log/auth.log |
 |/var/log/wtmp | 登录记录|二进制 |last |
 |/var/log/btmp |失败登录记录 |二进制 |lastb |
-|/var/log/lastlog |systemd日志记录 |目录 |journalctl |
+|/var/log/lastlog |systemd日志记录 |二进制 |lastlog |
 
 **先读取文本日志**
 
