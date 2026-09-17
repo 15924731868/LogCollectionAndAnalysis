@@ -155,7 +155,7 @@ timedatectl
 
 查看本地时间、时区和时间同步状态。日期与时间应正确，时区应为 `Asia/Shanghai`；时间错误会影响后面的日志筛选。
 
-> 记录：Ubuntu 的日期和时间为 _二 2026-09-15 16:43:19 CST
+> 记录：Ubuntu 的日期和时间为 _二 2026-09-17 16:43:19 CST
 _____；时区为 _Asia/Shanghai _____；时间同步状态为 ___ yes
 ___。
 
@@ -232,7 +232,7 @@ hostname -I
 
 这里的 `-I` 是大写字母 `I`，不是小写 `i`，也不是数字 `1`。输出可能包含多个地址，应选择与 VMware NAT 网段对应的私有 IPv4 地址，例如 `192.168.80.128`，不要填写 `127.0.0.1`。把这个地址记下来，后面填写在 SSH 命令的 `@` 右边。
 
-> 记录：本次 SSH 连接使用的 Ubuntu 虚拟机 IP 为 _192.168.154.128'_____。
+> 记录：本次 SSH 连接使用的 Ubuntu 虚拟机 IP 为 _192.168.154.128_____。
 
 **第 3 条：确认 SSH 服务正在运行**
 
@@ -368,7 +368,7 @@ sudo ls -ld /var/log/journal /run/log/journal
 
 | 实际路径 | 主要用途 | 文本、二进制还是目录 | 使用什么命令读取 |
 | :--- | :--- | :--- | :--- |
-|/var/log/syslog | 系统全局日志，记录大部分系统事件|文本 |cat /var/log/syslog |
+|/var/log/syslog | 系统全局日志，记录大部分系统事件|文本 |sudo tail /var/log/syslog|
 |/var/log/auth.log | 认证、登录、SSH 权限相关日志|文本 |cat /var/log/auth.log |
 |/var/log/wtmp |成功登录记录（二进制登录数据库） | 二进制|last |
 |/var/log/lastlog | 所有用户最近一次登录信息|二进制 | lastlog|
@@ -449,7 +449,7 @@ sudo journalctl -p warning -b --no-pager
 
 日志级别从严重到轻微依次为 `emerg`、`alert`、`crit`、`err`、`warning`、`notice`、`info`、`debug`。
 
-> 记录：是否查到匹配日志？_是_____；其中一条的内容或无记录提示为 systemd[1]: Dependency failed for sssd-nss.socket - SSSD NSS Service responder socket.______。
+> 记录：是否查到匹配日志？_是_____；其中一条的内容或无记录提示为 systemd[2806]: Started snap.session-agent.service._____。
 
 保存 `imgs/lab2_journal_queries.png`，只需覆盖以上 **3 类查询**的命令和关键输出。可合理拼图，长输出保留代表性记录，无匹配记录时保留真实提示。
 
