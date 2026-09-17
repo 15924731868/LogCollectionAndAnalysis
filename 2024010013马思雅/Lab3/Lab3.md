@@ -263,14 +263,13 @@ Sep  8 10:15:32 ubuntu lab3_read[2310]: student_id=20260001 name=张三 action=w
 
 | 4W1R 问题 | 本例怎样填写 |
 | :--- | :--- |
-| When 什么时候 | 9 月 8 日 10:15:32；该显示未提供年份和时区 |
-| Where 在哪里 | 主机 `ubuntu` |
-| Who 谁 | 自己指定的标签 `lab3_read`（进程号 2310）写入；正文中标识的本人姓名为张三，学号 20260001 |
-| What 做了什么 | 向本机日志系统写入一条 `write_test` 测试消息 |
-| Result 结果如何 | 正文写明 `result=success`，这是自己写入的测试标记，需结合两处查询均能查到来印证 |
+| When 什么时候 |2026-09-17 09:05:54  |
+| Where 在哪里 | /var/log/syslog（主机：msy-VMware-Virtual-Platform） |
+| Who 谁 |lab3_read（记录标签），写入人：msy，学号2024010013  |
+| What 做了什么 | student_id=2024010013 name=msy action=write_test result=success |
+| Result 结果如何 | 日志成功写入syslog，可通过grep检索到该记录 |
 
-**人话解释**：9 月 8 日 10:15:32，本人在 ubuntu 主机上用 `logger` 写入一条学号为 20260001 的测试消息，正文标记结果为 success。
-
+**人话解释**：使用logger命令生成一条自定义测试日志，标签为lab3_read，成功写入系统syslog文件，可通过grep检索到这条记录。
 **本题填写：**
 
 ```text
@@ -305,21 +304,23 @@ sudo grep -E "Accepted|Failed password|sudo" /var/log/auth.log | tail -n 30
 **本题填写：**
 
 ```text
-获取命令：
-日志原文：
+获取命令：journalctl -u sshd | grep -E "Accepted|Failed password"
+日志原文：2026-09-17T13:09:39.792653+08:00 msy-VMware-Virtual-Platform sshd[5537]: Accepted password for msy from 192.168.136.1 port 54723 ssh2
 ```
 
 | 4W1R | 根据本人原始日志填写 |
 | :--- | :--- |
-| When 什么时候 | |
-| Where 在哪里 | |
-| Who 谁 | |
-| What 做了什么 | |
-| Result 结果如何 | |
+| When 什么时候 |2026-09-17 13:09:39 |
+| Where 在哪里 | journalctl（主机msy-VMware-Virtual-Platform）|
+| Who 谁 |sshd（记录程序），尝试登录账号：msy
+ |
+| What 做了什么 |来自192.168.136.1的客户端使用账号msy发起SSH登录认证 |
+| Result 结果如何 |密码校验通过，SSH登录认证成功 |
 
 **用一两句话解释这个事件：**
 
-> 填写：
+> 填写：客户端IP 192.168.136.1发起SSH连接，使用msy账号登录，输入密码正确，SSH认证成功。
+4.3 一条软件包状态记录：/var/log/dpkg.log
 
 ### 4.3 一条软件包状态记录：`/var/log/dpkg.log`
 
@@ -372,22 +373,23 @@ sudo journalctl -k -b -n 30 --no-pager
 
 ```text
 实际日志来源（使用替代来源时说明原因）：
-获取命令：sudo grep -E "Accepted|Failed password" /var/log/auth.log | tail -n 30
-日志原文：Sep 17 08:53:57 msy-VMware-Virtual-Platform sshd[3914]: Accepted password for msy from 192.168.136.1 port 59569 ssh2
+获取命令：grep "htop" /var/log/dpkg.log | tail -n10
+日志原文：2026-09-17 13:05:34 status unpacked htop:amd64 3.5.3-1
 ```
 
 | 4W1R | 根据本人原始日志填写 |
 | :--- | :--- |
-| When 什么时候 |2026-09-17 08:53:57 |
-| Where 在哪里 |Ubuntu虚拟机（msy-VMware-Virtual-Platform） |
-| Who 谁 |sshd（记录程序），尝试登录账号：msy  |
-| What 做了什么 | 来自192.168.136.1的客户端使用账号msy发起SSH登录认证 |
-| Result 结果如何 |密码校验通过，SSH登录认证成功 
+| When 什么时候 | 2026-09-17 13:05:34|
+| Where 在哪里 |/var/log/dpkg.log（主机msy-VMware-Virtual-Platform）
+ |
+| Who 谁 | dpkg（记录工具）|
+| What 做了什么 | 记录htop软件包状态 |
+| Result 结果如何 |状态为unpacked，htop软件包已完成解压
  |
 
 **用一两句话解释这个事件：**
 
-> 填写：Windows主机从IP192.168.136.1向Ubuntu虚拟机发起SSH连接，使用msy账号登录，密码验证正确，SSH登录成功。
+> 填写：软件包管理工具dpkg记录htop软件包状态，htop包已经解压，等待后续配置。
 
 ---
 
