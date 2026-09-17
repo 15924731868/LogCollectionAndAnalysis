@@ -369,10 +369,10 @@ sudo ls -ld /var/log/journal /run/log/journal
 | 实际路径 | 主要用途 | 文本、二进制还是目录 | 使用什么命令读取 |
 | :--- | :--- | :--- | :--- |
 |/var/log/syslog | 系统全局日志，记录大部分系统事件|文本 |sudo tail /var/log/syslog|
-|/var/log/auth.log | 认证、登录、SSH 权限相关日志|文本 |cat /var/log/auth.log |
-|/var/log/wtmp |成功登录记录（二进制登录数据库） | 二进制|last |
-|/var/log/lastlog | 所有用户最近一次登录信息|二进制 | lastlog|
-|/var/log/journal |systemd 持久化日志存储目录 |目录 | journalctl|
+|/var/log/auth.log | 认证、登录、SSH 权限相关日志|文本 |sudo tail /var/log/auth.log |
+|/var/log/wtmp |成功登录记录（二进制登录数据库） | 二进制|last /var/log/wtmp |
+|/var/log/lastlog | 所有用户最近一次登录信息|二进制 | lastloglastlog /var/log/lastlog|
+|/var/log/journal |systemd 持久化日志存储目录 |目录 | journalctl -D /var/log/journal|
 
 **先读取文本日志**
 
@@ -437,7 +437,7 @@ sudo journalctl --since "2026-09-09 08:00:00" --until "2026-09-09 12:00:00" --no
 
 `--since` 指定起点，`--until` 指定终点，日期时间中的空格要保留在引号内。例如本次操作发生在 09:20，可以查询当天 09:00 至 09:30。若无结果，先核对时间范围和时区。
 
-> 记录：实际查询起点为 __2026-09-15 16:40:00____；终点为 2026-09-15 17:10:00______；观察到的事件或无记录情况为 _**输出多条系统日志，包含 systemd 重载、snapd 服务消息、NetworkManager 网卡获取 DHCP 地址、CRON 定时任务执行等系统事件**。_____。
+> 记录：实际查询起点为 __2026-09-17 16:40:00____；终点为 2026-09-17 17:10:00______；观察到的事件或无记录情况为 _**输出多条系统日志，包含 systemd 重载、snapd 服务消息、NetworkManager 网卡获取 DHCP 地址、CRON 定时任务执行等系统事件**。_____。
 
 **查询三：按严重程度筛选**
 
