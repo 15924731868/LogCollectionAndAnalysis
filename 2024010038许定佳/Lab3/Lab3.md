@@ -199,8 +199,8 @@ sudo grep "student_id=你的学号" /var/log/syslog | tail -n 5
 | :--- | :--- |
 | journal 中是否查到 |是 |
 | `/var/log/syslog` 中是否查到 |是 |
-| 两处记录有哪些共同字段或正文 |正文完全相同：`student_id=2024010038 name=许定佳 action=write_test result=success`；共同包含主机名、日志标签`lab3_read`、日志时间信息 |
-| 两处输出的主要区别 |journalctl 从 systemd 二进制日志读取，输出自带进程 PID；syslog 是文本日志文件，时间格式为传统 syslog 格式。journal 属于二进制数据库存储，syslog 为纯文本文件存储。 |
+| 两处记录有哪些共同字段或正文 |ab3_read，student_id=2024010038 name = 许定佳 action=write_test result=success，主机名称一致 |
+| 两处输出的主要区别 |journal 是本地中文时间格式，附带进程 PID；syslog 是 ISO 标准时间，没有 PID。journal 是 systemd-journald 的日志，syslog 是 rsyslog 写入的文本日志。 |
 
 保存 `imgs/lab3_dual_pipeline.png`，在同一张截图中保留 `logger` 命令、journal 和 syslog 两处查询结果，结果必须包含本人学号姓名。
 
