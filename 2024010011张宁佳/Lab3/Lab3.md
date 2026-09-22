@@ -92,7 +92,7 @@ whoami
 hostname -I
 ```
 
-> 记录：本次 SSH 连接的 Ubuntu 目标 IP 为 __192.168.154.129 
+> 记录：本次 SSH 连接的 Ubuntu 目标 IP 为 __192.168.154.129
 ____。
 
 再确认本机主机名，第二节 4W1R 中的 Where 就填这个值：
@@ -153,6 +153,8 @@ Windows / Git Bash                          Ubuntu 虚拟机
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | 成功认证 |9 月 22 日 16:56:17 | znj|192.168.154.1 |Accepted password |auth.log |
 | 失败认证 |9 月 22 日 16:56:07 |znj |192.168.154.1 |Failed password |auth.log |
+
+ps：虚拟机ip为192.168.154.129，而本次 SSH 登录由 Windows 宿主机通过 VMware NAT 虚拟网卡发起，日志中`from 192.168.154.1`为宿主机 VMnet8 虚拟网卡 IP，该 IP 取自日志原文 from 字段，符合 “来源 IP 取自日志 from 后地址” 的提取规则。
 
 保存 `imgs/lab3_ssh_auth.png`，保留 journal 与 `auth.log` 的查询命令及本人成功、失败记录。两处输出**合起来**能辨认本人一次成功认证和一次失败认证即可，不要求每一处都同时出现两条记录。
 
