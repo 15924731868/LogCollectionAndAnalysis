@@ -546,3 +546,4 @@ sudo journalctl --since "2 hours ago" --no-pager | grep -E "sshd|Accepted|Failed
 **暂定：2026 年 9 月 24 日 23:59:59（北京时间）**
 
 请在截止前创建 Lab3 的 PR 并完成最后一次推送。提交时间按仓库 `README.md` 第 4 节规定，以最后一次推送到 PR 的时间计算。
+
