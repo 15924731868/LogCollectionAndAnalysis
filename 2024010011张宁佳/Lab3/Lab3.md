@@ -393,7 +393,7 @@ sudo journalctl -k -b -n 30 --no-pager
 | Where 在哪里 |- 主机 znj-VMware-Virtual-Platform，本地 dpkg 包管理日志 |
 | Who 谁 |dpkg 包管理器，操作用户 znj |
 | What 做了什么 | 执行 htop 软件包的安装配置流程|
-| Result 结果如何 |日志记录 htop:amd64 3.3.0-4build1 状态标记为 installed|
+| Result 结果如何 |日志记录 htop:amd64 3.3.0-4build1 状态标记为 installed，仅凭这一行不能判断此前执行的是首次安装还是升级|
 
 **用一两句话解释这个事件：**
 
