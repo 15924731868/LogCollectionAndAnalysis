@@ -276,7 +276,7 @@ Sep  8 10:15:32 ubuntu lab3_read[2310]: student_id=20260001 name=张三 action=w
 **本题填写：**
 
 ```text
-获取命令：sudo grep -F "student_id=20240100111" /var/log/syslog | tail -n 5
+获取命令：sudo grep -F "student_id=2024010011" /var/log/syslog | tail -n 5
 
 日志原文：2026-09-22T17:32:53.479903+08:00 znj-VMware-Virtual-Platform lab3_read: student_id=2024010011 name=张宁佳 action=write_test result=success
 
@@ -391,7 +391,7 @@ sudo journalctl -k -b -n 30 --no-pager
 | Where 在哪里 |- 主机 znj-VMware-Virtual-Platform，本地 dpkg 包管理日志 |
 | Who 谁 |dpkg 包管理器，操作用户 znj |
 | What 做了什么 | 执行 htop 软件包的安装配置流程|
-| Result 结果如何 |htop:amd64 3.3.0-4build1 软件包成功安装，状态为 installed |
+| Result 结果如何 |日志记录 htop:amd64 3.3.0-4build1 状态标记为 installed|
 
 **用一两句话解释这个事件：**
 
