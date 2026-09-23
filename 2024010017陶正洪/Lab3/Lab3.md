@@ -92,7 +92,7 @@ whoami
 hostname -I
 ```
 
-> 记录：本次 SSH 连接的 Ubuntu 目标 IP 为192.168.62.130。
+> 记录：本次SSH连接的 Ubuntu 目标 IP为 192.168.62.130。
 
 再确认本机主机名，第二节 4W1R 中的 Where 就填这个值：
 
@@ -100,7 +100,7 @@ hostname -I
 hostname
 ```
 
-> 记录：本机主机名为ubuntu（即 4W1R 中 Where 的取值）。
+> 记录：本机主机名为ubuntu
 
 然后在 Windows 中**重新打开一个 Git Bash 窗口**，将下面的用户名和 IP 换成刚才的真实值：
 
@@ -303,7 +303,11 @@ sudo grep -E "Accepted|Failed password|sudo" /var/log/auth.log | tail -n 30
 
 模式中同时列出 `sudo`，是因为前面用 `sudo` 查日志也会在 `auth.log` 里留下记录。本题只选本人的 SSH 认证记录（`Accepted password` 或 `Failed password`），`sudo` 行忽略即可。
 
-**本题填写2026 年 9 月 17 日 14:12:05，来自 192.168.62.1 的客户端尝试用 ubuntu 账号登录 ubuntu 主机的 SSH 服务，本次密码输入错误，登录认证未通过。**
+**本题填写**
+获取命令：sudo grep -E "Accepted|Failed password" /var/log/auth.log | tail -n 20
+日志原文：2026-09-17T14:12:05.103039+00:00 ubuntu sshd[5853]: Failed
+password for ubuntu from 192.168.62.1 port 58937 ssh2
+
 
 ```text
 获取命令：
@@ -342,7 +346,9 @@ grep "htop" /var/log/dpkg.log | tail -n 10
 **格式示例：软件包状态记录**
 
 ```text
-2026-09-08 10:05:00 status installed htop:amd64 3.3.0-4build1
+获取命令：sudo grep -E "Accepted|Failed password" /var/log/auth.log | tail -n 20
+日志原文：2026-09-17T14:12:05.103039+00:00 ubuntu sshd[5853]: Failed password for ubuntu from 192.168.62.1 port 58937 ssh2
+
 ```
 
 先把这行分成“时间、状态、软件包、版本”。其中 `status installed` 表示软件包处于已安装状态，`amd64` 表示软件包的处理器架构。
@@ -372,9 +378,9 @@ sudo journalctl -k -b -n 30 --no-pager
 **本题填写：**
 
 ```text
-实际日志来源（使用替代来源时说明原因）：
-获取命令：
-日志原文：
+实际日志来源（使用替代来源时说明原因）：/var/log/dpkg.log，本次成功安装htop并获取到完整状态记录
+获取命令：grep "htop" /var/log/dpkg.log | tail -n 10
+日志原文：2026-09-17 15:01:46 status installed htop:amd64 3.3.0-4build1
 ```
 
 | 4W1R | 根据本人原始日志填写 |
