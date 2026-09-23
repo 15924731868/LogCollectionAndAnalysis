@@ -373,7 +373,7 @@ sudo journalctl -k -b -n 30 --no-pager
 **本题填写：**
 
 ```text
-实际日志来源（使用替代来源时说明原因）：
+实际日志来源（使用替代来源时说明原因）：/var/log/dpkg.log
 获取命令：cat /var/log/dpkg.log | grep htop
 日志原文：2026-09-23 18:11:38 install htop:amd64 <none> 3.0.5-1
 ```
