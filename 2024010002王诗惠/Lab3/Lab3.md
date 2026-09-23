@@ -315,7 +315,7 @@ sudo grep -E "Accepted|Failed password|sudo" /var/log/auth.log | tail -n 30
 | When 什么时候 | 2026-09-22 21:36:01|
 | Where 在哪里 |主机：kui-VMware-Virtual-Platform；SSH 服务，来源客户端 IP：192.168.66.1，端口 61493|
 | Who 谁 | kui|
-| What 做了什么 | 用户 kui 执行 sudo 命令，申请切换到 root 用户，系统打开 sudo 会话|
+| What 做了什么 |客户端从 192.168.66.1 发起 SSH 远程登录，尝试使用密码登录虚拟机 kui 账号|
 | Result 结果如何 | 身份验证成功，成功开启 root 权限会话|
 
 **用一两句话解释这个事件：**
