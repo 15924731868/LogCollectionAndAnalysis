@@ -199,7 +199,7 @@ sudo grep "student_id=你的学号" /var/log/syslog | tail -n 5
 | :--- | :--- |
 | journal 中是否查到 | 是|
 | `/var/log/syslog` 中是否查到 | 是|
-| 两处记录有哪些共同字段或正文 | 时间、主机名、标签 lab3_read；正文内容完全一致：student_id=2024010002 name = 王诗惠 action=write_test result=success|
+| 两处记录有哪些共同字段或正文 | 时间、主机名、标签 lab3_read；正文内容完全一致：student_id=2024010002 name=王诗惠 action=write_test result=success|
 | 两处输出的主要区别 | journal 时间格式简化，带有进程编号 [3361]；syslog 是带微秒 + 时区的 ISO 完整时间，不显示进程号|
 
 保存 `imgs/lab3_dual_pipeline.png`，在同一张截图中保留 `logger` 命令、journal 和 syslog 两处查询结果，结果必须包含本人学号姓名。
@@ -306,7 +306,7 @@ sudo grep -E "Accepted|Failed password|sudo" /var/log/auth.log | tail -n 30
 
 ```text
 获取命令：sudo grep -E "Accepted|Failed password|sudo" /var/log/auth.log | tail -n 30
-日志原文：2026-09-22T20:15:42.123456+08:00 kui-VMware-Virtual-Platform sshd[1234]: Accepted password for kui from 192.168.122.1 port 54321 ssh2
+日志原文：2026-09-22T21:27:13.37.452228+08:00 kui-VMware-Virtual-Platform sudo: pam_unix(sudo:session): session opened for user root(uid=0) by kui(uid=1000)
 ```
 
 | 4W1R | 根据本人原始日志填写 |
