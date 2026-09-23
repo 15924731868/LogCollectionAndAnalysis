@@ -306,20 +306,21 @@ sudo grep -E "Accepted|Failed password|sudo" /var/log/auth.log | tail -n 30
 
 ```text
 获取命令：sudo grep -E "Accepted|Failed password|sudo" /var/log/auth.log | tail -n 30
-日志原文：2026-09-22T21:27:13.37.452228+08:00 kui-VMware-Virtual-Platform sudo: pam_unix(sudo:session): session opened for user root(uid=0) by kui(uid=1000)
+日志原文：2026-09-22T21:36:01.259484+08:00 kui-VMware-Virtual-Platform sshd[3237]: Accepted password for kui from 192.168.66.1 port 61493 ssh2
+
 ```
 
 | 4W1R | 根据本人原始日志填写 |
 | :--- | :--- |
 | When 什么时候 | 2026-09-22 21:27:13|
-| Where 在哪里 | kui-VMware-Virtual-Platform|
+| Where 在哪里 |主机：kui-VMware-Virtual-Platform；SSH 服务，来源客户端 IP：192.168.66.1，端口 61493|
 | Who 谁 | kui|
 | What 做了什么 | 用户 kui 执行 sudo 命令，申请切换到 root 用户，系统打开 sudo 会话|
 | Result 结果如何 | 身份验证成功，成功开启 root 权限会话|
 
 **用一两句话解释这个事件：**
 
-> 填写：普通用户 kui 执行 sudo 操作，密码校验通过，系统为其开启 root 权限会话，该登录行为被 auth.log 审计日志记录。
+> 填写：客户端 IP 为 192.168.66.1 的主机，使用密码方式远程 SSH 连接虚拟机的 kui 账号，密码验证正确，sshd 认证通过，成功建立 SSH 连接。
 
 ### 4.3 一条软件包状态记录：`/var/log/dpkg.log`
 
