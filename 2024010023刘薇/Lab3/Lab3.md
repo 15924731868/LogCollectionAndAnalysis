@@ -149,8 +149,8 @@ Windows / Git Bash                          Ubuntu 虚拟机
 
 | 认证事件 | 日志时间 | 尝试登录的账号 | 来源 IP | 结果关键词 | 日志来源 |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| 成功认证 |2026-09-22T18:34:08.953238+08:00 |lw |192.168.109.1 |Accepted password |/var/log/auth.log |
-| 失败认证 |2026-09-22T18:34:02.433065+08:00 |lw | 192.168.109.1|Failed password |/var/log/auth.log |
+| 成功认证 |Sep 23 12:57:21 |lw |127.0.0.1 |Accepted password |/var/log/auth.log |
+| 失败认证 |Sep 23 12:57:12|lw | 127.0.0.1|Failed password |/var/log/auth.log |
 
 保存 `imgs/lab3_ssh_auth.png`，保留 journal 与 `auth.log` 的查询命令及本人成功、失败记录。两处输出**合起来**能辨认本人一次成功认证和一次失败认证即可，不要求每一处都同时出现两条记录。
 
@@ -274,21 +274,21 @@ Sep  8 10:15:32 ubuntu lab3_read[2310]: student_id=20260001 name=张三 action=w
 **本题填写：**
 
 ```text
-获取命令：
-日志原文：
+获取命令：sudo grep -F "student_id=2024010023" /var/log/syslog | tail -n 5
+日志原文：Sep 23 12:44:39 lw-VMware-Virtual-Platform lab3_read[4120]: student_id=2024010023 name=刘薇 action=write_test result=success
 ```
 
 | 4W1R | 根据本人原始日志填写 |
 | :--- | :--- |
-| When 什么时候 |9 月 22 日 18:40:43；该日志未提供年份与时区 |
+| When 什么时候 |9 月 23 日 12:44:39；该日志未提供年份与时区 |
 | Where 在哪里 |主机lw-VMware-Virtual-Platform |
-| Who 谁 |标签lab3_read（进程号 4233）写入日志；正文标识本人学号 2024010023，姓名刘薇 |
+| Who 谁 |标签 lab3_read（进程号 4120）写入日志；正文标识本人学号 2024010023，姓名刘薇 |
 | What 做了什么 |使用 logger 工具向本机日志系统写入一条 write_test 测试消息 |
-| Result 结果如何 |正文标记result=success，为手动写入的测试标记，journal 与 syslog 均可查询到本条日志，证明写入成功 |
+| Result 结果如何 |正文标记 result=success，为手动写入的测试标记，journal 与 syslog 均可查询到本条日志，证明写入成功 |
 
-**用一两句话解释这个事件：9 月 22 日 18:40:43，在 lw-VMware-Virtual-Platform 主机上执行 logger 命令，写入一条带学号姓名的测试日志，日志标记本次测试 result=success。**
+**用一两句话解释这个事件：**
 
-> 填写：
+> 填写：9 月 23 日 12:44:39，在 lw-VMware-Virtual-Platform 主机上执行 logger 命令，写入一条带学号姓名的测试日志，日志标记本次测试 result=success。
 
 ### 4.2 一条 SSH 认证记录：`/var/log/auth.log`
 
@@ -306,20 +306,20 @@ sudo grep -E "Accepted|Failed password|sudo" /var/log/auth.log | tail -n 30
 
 ```text
 获取命令：sudo grep -E "Accepted|Failed password|sudo" /var/log/auth.log | tail -n 30
-日志原文：2026-09-22T18:34:02.433065+08:00 lw-VMware-Virtual-Platform sshd[3786]: Failed password for lw from 192.168.109.1 port 61466 ssh2
+日志原文：Sep 23 12:57:12 lw-VMware-Virtual-Platform sshd[4279]: Failed password for lw from 127.0.0.1 port 38652 ssh2
 ```
 
 | 4W1R | 根据本人原始日志填写 |
 | :--- | :--- |
-| When 什么时候 |2026 年 09 月 22 日 18:34:02，带 + 08:00 时区 |
+| When 什么时候 |9 月 23 日 12:57:12；该日志未提供年份与时区|
 | Where 在哪里 |主机lw-VMware-Virtual-Platform |
-| Who 谁 |sshd 服务（进程号 3786）记录日志；来源客户端 IP：192.168.109.1，尝试登录账号 lw |
+| Who 谁 |sshd 服务（进程号 4279）记录日志；来源客户端 IP：127.0.0.1，尝试登录账号 lw |
 | What 做了什么 |客户端尝试使用密码对 lw 账号进行 SSH 登录认证 |
 | Result 结果如何 |Failed password，本次密码认证失败 |
 
-**用一两句话解释这个事件：2026 年 09 月 22 日 18:34:02，来自 192.168.109.1 的客户端尝试登录 lw 账号，密码输入错误，SSH 认证失败。**
+**用一两句话解释这个事件：
 
-> 填写：
+> 填写：9 月 23 日 12:57:12，来自 127.0.0.1 的客户端尝试登录 lw 账号，密码输入错误，SSH 认证失败。**
 
 ### 4.3 一条软件包状态记录：`/var/log/dpkg.log`
 
@@ -356,7 +356,7 @@ grep "htop" /var/log/dpkg.log | tail -n 10
 | What 做了什么 | 记录 `htop` 软件包的状态 |
 | Result 结果如何 | 状态为 `installed`，即已安装；仅凭这一行不能判断此前执行的是首次安装还是升级 |
 
-**人话解释**：9 月 8 日 10:05，软件包管理工具记录了 `htop` 已安装的状态。这一行没有说明是哪位用户执行的操作。
+**人话解释**：
 
 如果读到的是 `status unpacked`，只能写“已解包”，不能写成“安装已完成”。结果要按自己那条日志中的状态词填写。
 
@@ -373,20 +373,20 @@ sudo journalctl -k -b -n 30 --no-pager
 ```text
 实际日志来源（使用替代来源时说明原因）：/var/log/dpkg.log
 获取命令：grep "htop" /var/log/dpkg.log | tail -n 10
-日志原文：2026-09-22 18:45:20 status installed htop:amd64 3.0.5-1
+日志原文：2026-09-23 12:40:15 status installed htop:amd64 3.3.0-4build1
 ```
 
 | 4W1R | 根据本人原始日志填写 |
 | :--- | :--- |
-| When 什么时候 |2026 年 09 月 22 日 18:45:20；该日志未提供时区 |
+| When 什么时候 |2026 年 09 月 23 日 12:40:15；该日志未提供时区|
 | Where 在哪里 |该日志未提供主机名；可另注：从本人 Ubuntu 虚拟机/var/log/dpkg.log取得 |
 | Who 谁 |记录工具 dpkg；该日志未提供执行操作的用户账号 |
 | What 做了什么 |记录 htop 软件包的状态信息 |
 | Result 结果如何 | 状态installed，htop 软件包已安装；仅该行不能区分是首次安装或是升级|
 
-**用一两句话解释这个事件：2026 年 09 月 22 日 18:45:20，dpkg 软件包管理工具记录 htop 软件包处于已安装状态，本条日志未记录操作用户**
+**用一两句话解释这个事件：**
 
-> 填写：
+> 填写：dpkg 软件包管理工具记录 htop 软件包处于已安装状态，本条日志未记录操作用户。
 
 ---
 
@@ -399,7 +399,7 @@ sudo journalctl -k -b -n 30 --no-pager
    > 填写：systemd-journald 是系统日志服务，接收程序输出的日志，保存为二进制 journal 日志；rsyslog 接收 journald 转发的日志，把日志持久化保存为文本文件（syslog、auth.log）。logger 发送消息时，消息先交给 systemd-journald，journald 一方面存入 journal 二进制日志，同时转发消息给 rsyslog 写入文本 syslog 文件，所以同一条日志会在两处同时保存。
 2. SSH 提示 `Failed password` 能证明什么，不能证明什么？请结合本次记录回答。
 
-   > 填写：能证明：本次来自 192.168.109.1 的客户端使用 lw 账号登录时，输入的密码不匹配，本次认证失败。
+   > 填写：能证明：本次来自 127.0.0.1 的客户端使用 lw 账号登录时，输入的密码不匹配，本次认证失败。
 不能证明：不能确定是谁在操作客户端，不能断定是攻击行为，无法确认输入错误的原因（输错密码、恶意爆破等），仅代表本次密码校验不通过。
 
 ---
