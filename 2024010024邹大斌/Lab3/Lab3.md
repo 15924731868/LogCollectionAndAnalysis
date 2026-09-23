@@ -84,7 +84,7 @@ Sep  8 10:11:04 ubuntu sshd[1204]: Failed password for student from 192.168.80.1
 whoami
 ```
 
-> 记录：本次使用的 Ubuntu 用户名为 __hu____。
+> 记录：本次使用的 Ubuntu 用户名为 __hu__。
 
 再查看当前 IP：
 
