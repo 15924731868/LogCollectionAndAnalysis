@@ -346,9 +346,9 @@ grep "htop" /var/log/dpkg.log | tail -n 10
 **格式示例：软件包状态记录**
 
 ```text
-获取命令：sudo grep -E "Accepted|Failed password" /var/log/auth.log | tail -n 20
-日志原文：2026-09-17T14:12:05.103039+00:00 ubuntu sshd[5853]: Failed password for ubuntu from 192.168.62.1 port 58937 ssh2
-
+实际日志来源（使用替代来源时说明原因）：/var/log/dpkg.log，本次成功安装htop并获取到完整状态记录
+获取命令：grep "htop" /var/log/dpkg.log | tail -n 10
+日志原文：2026-09-17 15:01:46 status installed htop:amd64 3.3.0-4build1
 ```
 
 先把这行分成“时间、状态、软件包、版本”。其中 `status installed` 表示软件包处于已安装状态，`amd64` 表示软件包的处理器架构。
@@ -388,7 +388,7 @@ sudo journalctl -k -b -n 30 --no-pager
 | When 什么时候 |Start-Date 是开始时间，End-Date 是结束时间：2026 年 9 月 8 日 10:04:30 至 10:05:01；该日志未提供时区 |
 | Where 在哪里 |该日志未提供主机名；可另注日志的取得位置 |
 | Who 谁 |Requested-By 中的 student，括号中的 1000 是用户 ID；记录工具为 apt |
-| What 做了什么 |`Commandline` 中的 `apt install htop`，即请求安装 htop 工具 |
+| What 做了什么 |记录 htop 软件包的状态|
 | Result 结果如何 |有 Install 安装清单和结束时间；是否安装成功还应对照 dpkg.log 的最终状态或 apt/term.log 的输出 |
 
 **用一两句话解释这个事件：**
