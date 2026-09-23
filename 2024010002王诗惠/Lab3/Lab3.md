@@ -306,7 +306,7 @@ sudo grep -E "Accepted|Failed password|sudo" /var/log/auth.log | tail -n 30
 
 ```text
 获取命令：sudo grep -E "Accepted|Failed password|sudo" /var/log/auth.log | tail -n 30
-日志原文：2026-09-22T21:27:13.37.452228+08:00 kui-VMware-Virtual-Platform sudo: pam_unix(sudo:session): session opened for user root(uid=0) by kui(uid=1000)
+日志原文：2026-09-22T20:15:42.123456+08:00 kui-VMware-Virtual-Platform sshd[1234]: Accepted password for kui from 192.168.122.1 port 54321 ssh2
 ```
 
 | 4W1R | 根据本人原始日志填写 |
