@@ -312,7 +312,7 @@ sudo grep -E "Accepted|Failed password|sudo" /var/log/auth.log | tail -n 30
 
 | 4W1R | 根据本人原始日志填写 |
 | :--- | :--- |
-| When 什么时候 | 2026-09-22 21:27:13|
+| When 什么时候 | 2026-09-22 21:36:01|
 | Where 在哪里 |主机：kui-VMware-Virtual-Platform；SSH 服务，来源客户端 IP：192.168.66.1，端口 61493|
 | Who 谁 | kui|
 | What 做了什么 | 用户 kui 执行 sudo 命令，申请切换到 root 用户，系统打开 sudo 会话|
