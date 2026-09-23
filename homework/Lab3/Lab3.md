@@ -84,7 +84,7 @@ Sep  8 10:11:04 ubuntu sshd[1204]: Failed password for student from 192.168.80.1
 whoami
 ```
 
-> 记录：本次使用的 Ubuntu 用户名为 ______。
+> 记录：本次使用的 Ubuntu 用户名为 __hu____。
 
 再查看当前 IP：
 
@@ -92,7 +92,7 @@ whoami
 hostname -I
 ```
 
-> 记录：本次 SSH 连接的 Ubuntu 目标 IP 为 ______。
+> 记录：本次 SSH 连接的 Ubuntu 目标 IP 为 __192.168.184.128 ____。
 
 再确认本机主机名，第二节 4W1R 中的 Where 就填这个值：
 
@@ -100,7 +100,7 @@ hostname -I
 hostname
 ```
 
-> 记录：本机主机名为 ______（即 4W1R 中 Where 的取值）。
+> 记录：本机主机名为 ___hu-VMware-Virtual-Platform___（即 4W1R 中 Where 的取值）。
 
 然后在 Windows 中**重新打开一个 Git Bash 窗口**，将下面的用户名和 IP 换成刚才的真实值：
 
@@ -149,7 +149,7 @@ Windows / Git Bash                          Ubuntu 虚拟机
 
 | 认证事件 | 日志时间 | 尝试登录的账号 | 来源 IP | 结果关键词 | 日志来源 |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| 成功认证 | | | | | |
+| 成功认证 |2026-09-23 17:05:27 |hu | 192.168.184.1|Accepted password |/var/log/auth.log |
 | 失败认证 | | | | | |
 
 保存 `imgs/lab3_ssh_auth.png`，保留 journal 与 `auth.log` 的查询命令及本人成功、失败记录。两处输出**合起来**能辨认本人一次成功认证和一次失败认证即可，不要求每一处都同时出现两条记录。
@@ -197,10 +197,10 @@ sudo grep "student_id=你的学号" /var/log/syslog | tail -n 5
 
 | 项目 | 你的记录 |
 | :--- | :--- |
-| journal 中是否查到 | |
-| `/var/log/syslog` 中是否查到 | |
-| 两处记录有哪些共同字段或正文 | |
-| 两处输出的主要区别 | |
+| journal 中是否查到 |是 |
+| `/var/log/syslog` 中是否查到 |是 |
+| 两处记录有哪些共同字段或正文 |时间戳、标签lab3_read、完整消息文本：student_id=2024010024 name=zoudabin action=write_test result=success |
+| 两处输出的主要区别 |journal 输出额外携带进程号[6919]；syslog 文件日志不带进程号；时间格式展示略有差异，journal 为9月 23 17:56:33，syslog 是2026-09-23T17:56:33.627058+08:00 |
 
 保存 `imgs/lab3_dual_pipeline.png`，在同一张截图中保留 `logger` 命令、journal 和 syslog 两处查询结果，结果必须包含本人学号姓名。
 
@@ -280,15 +280,15 @@ Sep  8 10:15:32 ubuntu lab3_read[2310]: student_id=20260001 name=张三 action=w
 
 | 4W1R | 根据本人原始日志填写 |
 | :--- | :--- |
-| When 什么时候 | |
-| Where 在哪里 | |
-| Who 谁 | |
-| What 做了什么 | |
-| Result 结果如何 | |
+| When 什么时候 |2026-09-23 17:56:33 |
+| Where 在哪里 |主机 hu-VMware-Virtual-Platform |
+| Who 谁 | 自己指定的标签 lab3_read（进程号 6919）写入；正文中标识的本人姓名为 zoudabin，学号 2024010024|
+| What 做了什么 |向本机日志系统写入一条 write_test 测试消息 |
+| Result 结果如何 |正文写明 result=success，这是自己写入的测试标记，需结合两处查询均能查到来印证 |
 
 **用一两句话解释这个事件：**
 
-> 填写：
+> 填写：9 月 23 日 17:56:33，本人在 hu-VMware-Virtual-Platform 主机上用 logger 写入一条学号为 2024010024 的测试消息，消息标记 result=success，journal 与 syslog 两处日志均可检索到该记录。
 
 ### 4.2 一条 SSH 认证记录：`/var/log/auth.log`
 
@@ -305,21 +305,23 @@ sudo grep -E "Accepted|Failed password|sudo" /var/log/auth.log | tail -n 30
 **本题填写：**
 
 ```text
-获取命令：
-日志原文：
+获取命令：sudo grep -E "Accepted|Failed password|sudo" /var/log/auth.log | tail -n 30
+
+日志原文：2026-09-23T17:05:27.028910+08:00 hu-VMware-Virtual-Platform sshd[3624]: Accepted password for hu from 192.168.184.1 port 52850 ssh2
+
 ```
 
 | 4W1R | 根据本人原始日志填写 |
 | :--- | :--- |
-| When 什么时候 | |
-| Where 在哪里 | |
-| Who 谁 | |
-| What 做了什么 | |
-| Result 结果如何 | |
+| When 什么时候 |  9 月 23 日 17:05:27|
+| Where 在哪里 |主机 hu-VMware-Virtual-Platform，日志文件/var/log/auth.log |
+| Who 谁 |记录程序 sshd；尝试登录的账号 hu，来源 IP：192.168.184.1 |
+| What 做了什么 | 远程主机发起 SSH 密码认证，向本机 sshd 服务提交账号密码进行登录校验|
+| Result 结果如何 | 密码认证 Accepted password，SSH 登录成功，在 auth.log 生成审计记录|
 
 **用一两句话解释这个事件：**
 
-> 填写：
+> 填写：9 月 23 日 17:05:27，远程 IP 192.168.184.1 使用 SSH 尝试登录 hu-VMware-Virtual-Platform 主机的 hu 账号，密码校验通过，SSH 登录成功并写入 auth.log 认证日志。
 
 ### 4.3 一条软件包状态记录：`/var/log/dpkg.log`
 
@@ -378,15 +380,15 @@ sudo journalctl -k -b -n 30 --no-pager
 
 | 4W1R | 根据本人原始日志填写 |
 | :--- | :--- |
-| When 什么时候 | |
-| Where 在哪里 | |
-| Who 谁 | |
-| What 做了什么 | |
-| Result 结果如何 | |
+| When 什么时候 |2026 年 9 月 23 日 18:11:38；该日志未提供时区 |
+| Where 在哪里 |该日志未提供主机名；可以另注 “从本人 Ubuntu 虚拟机的 /var/log/dpkg.log 取得 |
+| Who 谁 |记录工具为 dpkg；该日志未提供执行操作的用户账号 |
+| What 做了什么 | 记录 htop 软件包的安装状态|
+| Result 结果如何 |状态为 install，开始安装 htop 软件包；仅凭这一行不能判断后续是否安装成功 |
 
 **用一两句话解释这个事件：**
 
-> 填写：
+> 填写：9 月 23 日 18:11:38，软件包管理工具 dpkg 记录了 htop 开始安装的状态。这一行没有说明是哪位用户执行的操作。
 
 ---
 
@@ -396,11 +398,11 @@ sudo journalctl -k -b -n 30 --no-pager
 
 1. systemd-journald 与 rsyslog 各负责什么？结合 3.2 节的结果，解释它们为什么可以同时保留同一条日志。
 
-   > 填写：
+   > 填写：systemd-journald 是 systemd 自带日志服务，负责收集内核、系统服务、应用输出的日志，以二进制形式保存在 journal 数据库；rsyslog 是传统 syslog 服务，接收日志并写入`/var/log/`下的文本日志文件。应用产生日志先交给 systemd-journald，journald 会转发日志给 rsyslog，因此同一条日志会同时保存在 journal 数据库与 rsyslog 管理的文本日志里。
 
 2. SSH 提示 `Failed password` 能证明什么，不能证明什么？请结合本次记录回答。
 
-   > 填写：
+   > 填写：Failed password 能证明：该来源 IP 主机尝试使用对应账号进行 SSH 登录，提交的密码与本机密码不匹配，本次密码认证失败。不能证明：来源 IP 就是实际操作者，也不能证明账号本身存在锁定，仅说明本次密码错误，无法确认登录发起者真实身份。
 
 ---
 
