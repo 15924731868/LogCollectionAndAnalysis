@@ -149,8 +149,9 @@ Windows / Git Bash                          Ubuntu 虚拟机
 
 | 认证事件 | 日志时间 | 尝试登录的账号 | 来源 IP | 结果关键词 | 日志来源 |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| 成功认证 |2026-09-23 17:05:27 |hu | 192.168.184.1|Accepted password |/var/log/auth.log |
-| 失败认证 | | | | | |
+| 成功认证 |2026-09-24 08:24:48|hu | 192.168.184.128|Accepted password |journalctl -u ssh |
+| 失败认证 |2026-09-24 08:19:21 |student |192.168.184.128 |Failed password |/var/log/auth.log |
+
 
 保存 `imgs/lab3_ssh_auth.png`，保留 journal 与 `auth.log` 的查询命令及本人成功、失败记录。两处输出**合起来**能辨认本人一次成功认证和一次失败认证即可，不要求每一处都同时出现两条记录。
 
@@ -199,8 +200,8 @@ sudo grep "student_id=你的学号" /var/log/syslog | tail -n 5
 | :--- | :--- |
 | journal 中是否查到 |是 |
 | `/var/log/syslog` 中是否查到 |是 |
-| 两处记录有哪些共同字段或正文 |时间戳、标签lab3_read、完整消息文本：student_id=2024010024 name=zoudabin action=write_test result=success |
-| 两处输出的主要区别 |journal 输出额外携带进程号[6919]；syslog 文件日志不带进程号；时间格式展示略有差异，journal 为9月 23 17:56:33，syslog 是2026-09-23T17:56:33.627058+08:00 |
+| 两处记录有哪些共同字段或正文 |时间戳、标签lab3_read、完整消息文本：<br>student_id=2024010024 name=邹大斌 action=write_test result=success |
+| 两处输出的主要区别 |journal 输出额外携带进程号[4198]；syslog 文件日志不带进程号。格式展示略有差异，journal 为9月 24 08:30:03，syslog为2026-09-24T08:30:03.xxxxxx+08:00 |
 
 保存 `imgs/lab3_dual_pipeline.png`，在同一张截图中保留 `logger` 命令、journal 和 syslog 两处查询结果，结果必须包含本人学号姓名。
 
