@@ -153,7 +153,8 @@ dpkg-query -W grafana loki alloy nginx
 >
 > Grafana、Loki、Alloy 的版本分别是什么？nginx 是否已经安装？
 >
-> 答：Grafana=11.2.0，Loki=3.3.2，Alloy=1.6.0；nginx 已安装
+> 答：Grafana版本：11.2.0  Loki版本：3.3.2  Alloy版本：1.6.0  nginx状态：已安装
+
 
 下载失败时，先阅读安装命令的报错，再按提示检查网络、软件源或磁盘空间。处理后可以重新执行 `packages`。**安装成功后再继续下一步**，后面三个配置步骤不会重复下载软件。
 
@@ -552,12 +553,11 @@ sudo true
 把实际用过的三条查询写在下面，学号等内容要换成自己的，**让查询语句可以直接复制使用**。除了截图，也要用文字简单说明查到了什么。
 
 | 查询目的 | 实际 LogQL | 查到的结果摘要 |
-| :--- | :--- | :--- |
-| 在 syslog 中查本人测试日志 |`{job="syslog"} | = "student_id=2024010008"|
-| 筛选本人结果为 success 的测试日志 |`{job="syslog"} |= "student_id=2024010008" |
-| 查询 sudo 认证活动 |`{job="auth"} | = "sudo"`|
-
-完成这三条查询后，你就检查了日志从写入文件、发送到 Loki，再到网页显示的整个过程，也比较了不同来源的记录。
+| :--- | :--- | :--- |		
+|在 syslog 中查本人测试日志	|`{job="syslog"}	= "student_id=2024010008"	= "lab3_read"	= "action=write_test"`	|返回 1 条 logger 生成的带学号测试日志，日志包含 student_id=2024010008、lab3_read 标记和 action=write_test|
+|筛选本人结果为 success 的测试日志	|`{job="syslog"}	= "student_id=2024010008"	= "lab3_read"	= "result=success"`	|返回本人学号、lab3_read 标记且 result=success 的测试日志，验证测试记录结果为成功|
+|查询 sudo 认证活动	|`{job="auth"}	= "sudo"`	|在 auth 来源中查到 sudo 身份验证相关日志，记录了本次 sudo 操作		
+完成这三条查询后，你就检查了日志从写入文件、发送到 Loki，再到网页显示的整个过程，也比较了不同来源的记录。|
 
 **完成后保留本次安装的软件和配置，并创建“Lab5 平台可用”快照。** 下次还要接着使用，正常结束实验时不运行 `restore.sh`。
 
