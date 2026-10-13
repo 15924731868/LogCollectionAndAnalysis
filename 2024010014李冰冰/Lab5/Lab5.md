@@ -1,4 +1,317 @@
-s找到负责读文件的 `loki.source.file "linux_logs"`，重点看下面几项：
+# Lab5：日志采集平台搭建与验证
+
+本实验在 Ubuntu 虚拟机中搭建日志平台。开始前，请确认能通过 SSH 登录虚拟机，并能使用 `sudo` 运行命令。
+
+本次用 `logger` 产生测试日志，通过 Ubuntu 默认的日志规则写入 `/var/log/syslog`，再把它收集到平台中查看。
+
+**报告填写要求：请保留本文的题目、说明、示例、选读内容和 Markdown 排版，在填写区补充自己的结果。选读内容仍不要求执行或作答。** 本次作业启用模板数量检查，具体要求见第十节。
+
+**本次要完成的是：写入一条带学号的新日志，再分别从本地文件、Loki 的查询接口（API）和 Grafana 网页中找到它。** 其中，API 可以用命令访问，后面会用 `curl` 来查询。
+
+开始前请先给虚拟机拍一个快照，保留当前环境。本实验会安装软件并修改配置，建议预留 2～3 小时；下载较慢时，可以课前先安装软件，课堂上再逐步配置和检查。
+
+---
+
+## 一、为什么安装 Alloy、Loki 和 Grafana，为什么不用 ELK
+
+### 1.1 为什么要安装这三个软件
+
+Ubuntu 的日志分散在 `syslog`、`auth.log` 等文件中。排查问题时，需要登录虚拟机、逐个文件查找；如果有多台主机，还要逐台登录，难以放在一起查看。
+
+**安装这三个软件，就是为了解决“日志分散、查找麻烦、缺少统一查看入口”的问题。** 它们把新日志自动收集到一起，让我们在浏览器里按来源、时间和关键词查询，后续还能统计和画图。本次先在一台虚拟机上练习这套过程，三个软件分别负责：
+
+| 软件 | 在本实验中做什么 |
+| :--- | :--- |
+| **Alloy** | 持续读取本地日志文件，把新日志发送给 Loki |
+| **Loki** | 接收并保存日志，按查询条件返回结果 |
+| **Grafana** | 提供网页界面，让我们查询和查看 Loki 中的日志 |
+
+本次日志经过的完整过程是：
+
+```text
+logger 产生日志 → rsyslog 写入 syslog → Alloy 采集 → Loki 存储和查询 → Grafana 网页展示
+```
+
+rsyslog 按 Ubuntu 默认规则把日志写入文件，logrotate 负责文件轮转，本次使用它们的默认配置。Alloy 读取这些文件，Grafana 显示查询结果。三个新软件都安装在同一台虚拟机中，按 **Loki → Alloy → Grafana** 的顺序配置。
+
+### 1.2 为什么不用主流的 ELK
+
+**ELK 是常见的日志平台方案，也能完成本实验。** 它由 Elasticsearch（存储和搜索）、Logstash（采集和处理）、Kibana（网页查询和展示）组成。
+
+**本次不用 ELK，主要是因为整套系统较重，本机虚拟机的资源有限。** 三个软件同时运行会占用较多内存、CPU 和磁盘，而 Windows 电脑本身还要运行日常软件。在本课程建议的 4GB 内存虚拟机上，再运行整套 ELK 容易出现内存紧张、卡顿，配置和排错也更费时间。
+
+本实验日志量小，先做到“自动收集、统一查询、网页查看”即可。**按本实验的配置，Alloy + Loki + Grafana 更轻量，适合有限的虚拟机资源**。这套平台满足本次的查询需要，Lab6 还会继续用它做统计和图表。ELK 可以留到资源更充足、需要学习复杂搜索与分析时再实践。
+
+---
+
+## 二、任务 1：检查环境并安装软件
+
+### 2.1 检查内存、磁盘和网络
+
+确认已经创建快照后，再检查虚拟机的内存和磁盘空间。建议至少分配 4GB 内存，后续还要留意实际占用情况。
+
+```bash
+free -h
+```
+
+`free` 查看内存，`-h` 让结果使用 MB、GB 等单位显示。重点看 `available`，它表示大约还有多少内存可用。
+
+```bash
+df -h /
+```
+
+这条命令查看 `/` 所在磁盘分区的空间。软件包和收集到的日志都会占用磁盘，如果剩余空间不足，要先腾出空间再安装。
+
+```bash
+curl -I https://mirrors.tuna.tsinghua.edu.cn/grafana/apt/dists/stable/Release
+```
+
+这条命令只查看服务器返回的响应头，不下载整个文件，用来检查能否连上清华 TUNA 镜像站。本实验从国内镜像下载软件，减少等待时间；是否安装成功，还要看后面的安装结果。
+
+### 2.2 看清脚本要安装什么
+
+课程脚本把安装和配置分成了几个步骤，可以减少重复输入。运行前，先了解它会安装哪些软件：
+
+| 软件 | 为什么需要 | 本次是否重点配置 |
+| :--- | :--- | :--- |
+| Loki | 保存收到的日志，供后面查询 | 是，任务 2 |
+| Alloy | 把现有文本日志发送给 Loki | 是，任务 3 |
+| Grafana | 在浏览器中连接 Loki、查看查询结果 | 是，任务 4 |
+| rsyslog、logrotate | 负责本地日志写入和文件轮转 | 脚本安装，使用 Ubuntu 默认配置 |
+| nginx | 提供网页服务，访问网页时会产生日志，供 Lab6 使用 | 本次提前安装，Lab6 再配置演示站 |
+| `curl`、`wget`、`gpg` 等工具 | 下载文件、验证软件包来源、向平台发送查询请求 | 安装和检查时会用到 |
+
+**nginx 是为下一次实验准备的日志来源。** 这次用 `logger` 产生测试日志，下次会通过访问 nginx 网页产生日志。
+
+### 2.3 安装软件包并记录版本
+
+**报告在 Windows 上编写，软件安装和后续配置在 Ubuntu 虚拟机中完成。** 先把 Windows 课程仓库 `homework/Lab5/` 下的 `install.sh` 和 `restore.sh` 传到虚拟机，再执行安装命令。
+
+**① 在虚拟机中准备存放脚本的目录**
+
+使用之前演示过的 Xshell 登录 Ubuntu，也可以使用虚拟机终端或 MobaXterm 的 SSH 终端，执行：
+
+```bash
+mkdir -p ~/Lab5
+```
+
+`~` 表示当前 Ubuntu 用户的主目录，例如 `/home/zhangsan`。后续统一把脚本放在虚拟机的 `~/Lab5/` 中。
+
+**② 从 Windows 传输脚本，任选一种方式即可**
+
+| 方式 | 怎样操作 |
+| :--- | :--- |
+| **虚拟机拖放** | 如果虚拟机有图形桌面，并已安装相应的增强工具、启用拖放功能，可将两个脚本从 Windows 拖入 Ubuntu，再移到主目录下的 `Lab5` 文件夹。拖放不可用时选下面的方式。 |
+| **Xftp** | 使用与 Xshell 相同的虚拟机 IP、用户名和登录方式，通过 SFTP 连接；左侧找到 Windows 中的两个脚本，右侧打开 `/home/你的用户名/Lab5/`，上传文件。 |
+| **scp** | 在 Windows 的 Git Bash 中运行下面的传输命令。 |
+| **MobaXterm** | 建立到虚拟机的 SSH 连接，在左侧 SFTP 文件面板中打开 `/home/你的用户名/Lab5/`，把 Windows 中的两个脚本拖入该面板上传。 |
+
+选择 `scp` 时，在 **Windows 的课程仓库根目录**右键选择 **Open Git Bash here**，执行：
+
+```bash
+scp ./homework/Lab5/install.sh ./homework/Lab5/restore.sh 你的用户名@虚拟机IP:~/Lab5/
+```
+
+把用户名和虚拟机 IP 替换为自己的，按提示完成登录。此命令只负责传文件；上传完成后，回到连接 Ubuntu 的终端执行后续命令。
+
+**③ 在虚拟机中检查文件并安装**
+
+```bash
+cd ~/Lab5
+ls -l install.sh restore.sh
+```
+
+确认两个文件都已上传。后续 `install.sh` 的四个阶段都在虚拟机的这个目录运行，报告仍在 Windows 的 `学号姓名/Lab5/` 中填写。
+
+先查看脚本：
+
+```bash
+less install.sh
+```
+
+先找到 `packages`、`loki`、`alloy`、`grafana` 四个部分，分别对应安装软件和配置三个服务。暂时不必读懂每一行，后面会分步说明；按 `q` 退出查看。
+
+```bash
+sudo bash install.sh packages
+```
+
+`sudo` 让命令以管理员权限运行，`bash install.sh` 表示运行这个脚本，`packages` 表示**安装所需软件，并启动负责本地日志写入的 rsyslog**。三个平台服务的课程配置将在后面完成。
+
+Grafana、Loki 和 Alloy 从清华 TUNA 镜像下载，软件包来源仍通过 Grafana 官方签名验证。其他基础软件继续从虚拟机已有的 Ubuntu 软件源下载。
+
+如果之前已运行旧版脚本，下载地址仍显示 `apt.grafana.com` 且速度很慢，可在下载阶段按 `Ctrl+C` 停止，将新版 `install.sh` 重新上传并覆盖虚拟机中的文件，再运行上面的命令。脚本会先替换旧的 Grafana 软件源，再继续安装。
+
+部分软件安装后会自动启动。即使此时状态是 `active`，也还需要完成后面的课程配置，并通过查询确认日志已经收到了。
+
+```bash
+dpkg-query -W grafana loki alloy nginx
+```
+
+这条命令列出已安装软件的名称和版本。不同时间安装，版本可能不同，请记录自己的实际输出。
+
+> **记录**
+>
+> Grafana、Loki、Alloy 的版本分别是什么？nginx 是否已经安装？
+>
+> 答：Grafana 版本：13.2.3；Loki 版本：3.7.8；Alloy 版本：1.20.1‑1；nginx 已安装，版本 1.24.0‑2ubuntu7.18
+
+下载失败时，先阅读安装命令的报错，再按提示检查网络、软件源或磁盘空间。处理后可以重新执行 `packages`。**安装成功后再继续下一步**，后面三个配置步骤不会重复下载软件。
+
+### 2.4 写入一条测试日志
+
+先确认 rsyslog 正在运行：
+
+```bash
+systemctl is-active rsyslog
+```
+
+正常应输出 `active`。然后使用下面的命令，把学号和姓名替换为自己的：
+
+```bash
+logger -p user.notice -t lab3_read "student_id=你的学号 name=你的姓名 action=write_test result=success"
+```
+
+`user.notice` 指定日志类别和级别，Ubuntu 的默认规则会把它写入 `/var/log/syslog`；`lab3_read` 是日志标记，方便找到自己的测试消息。
+
+等待 1～2 秒后，查看含本人学号的最新一条记录：
+
+```bash
+sudo grep 'student_id=你的学号' /var/log/syslog | tail -n 1
+```
+
+`tail -n 1` 只显示最后一行。确认其中有自己的姓名、`action=write_test` 和 `result=success`。如果没有，先检查 rsyslog 的运行状态和 `/etc/rsyslog.d/50-default.conf` 中写入 `syslog` 的默认规则，再继续配置平台。
+
+> **记录**：rsyslog 是否为 `active`？`/var/log/syslog` 中是否出现了本人的测试日志？
+>
+> 答：rsyslog 状态为 active；/var/log/syslog 中已经出现本人带学号姓名的测试日志
+
+保存 `imgs/lab5_prepare.png`，保留本地测试日志的查询命令、本人日志和 2.3 节的软件版本输出。
+
+![本地日志和软件版本](imgs/lab5_prepare.png)
+
+---
+
+## 三、任务 2：配置并验证 Loki
+
+先配置 Loki，让它准备好接收和保存日志。这一步检查它能否正常工作，下一步再让 Alloy 发送日志过来。
+
+### 3.1 配置 Loki，查看主要设置
+
+在 Ubuntu 虚拟机存放脚本的目录中执行：
+
+```bash
+cd ~/Lab5
+sudo bash install.sh loki
+```
+
+这一步只配置 Loki：脚本会备份原配置，写入适合本次实验的设置，准备保存数据的目录，再启动服务。原配置的首次备份保存在 `/opt/loglab-state/Lab5/`。
+
+```bash
+sudo cat /etc/loki/config.yml
+```
+
+查看脚本写入的配置，先找到下面几项：
+
+| 配置项 | 本次设置 | 含义 |
+| :--- | :--- | :--- |
+| `http_listen_port` | `3100` | Alloy 发送日志、Grafana 查询日志时，都访问这个端口 |
+| `path_prefix` | `/var/lib/loki` | Loki 保存数据时使用的基础目录 |
+| `filesystem` | 保存在本地文件中 | 日志数据放在虚拟机磁盘上 |
+| `replication_factor` | `1` | 只保存一份，不会再复制到另一台机器 |
+| `auth_enabled` | `false` | 所有日志使用同一个空间；这项设置不提供登录验证 |
+
+其余配置先使用脚本提供的设置，本次不要求逐项解释。重点知道 Loki 使用哪个端口、数据存在哪里。本实验没有额外设置登录验证，请只在课程虚拟机和课堂网络中使用。
+
+### 3.2 检查 Loki 是否启动并准备好接收请求
+
+```bash
+systemctl is-active loki
+```
+
+正常应输出 `active`，表示服务已经启动。
+
+```bash
+curl -sS http://127.0.0.1:3100/ready
+```
+
+`-s` 隐藏进度条，`-S` 保留报错信息。访问 `/ready` 是在检查 Loki 是否准备好了，正常应返回 `ready`。**服务启动后可能还需要一点准备时间，所以两个检查都要做。**
+
+刚启动时，可能看到含有 `ingester not ready` 的提示，意思是接收日志的部分还在准备。等待 30～60 秒后再试；如果一直没有返回 `ready`，查看服务日志：
+
+```bash
+sudo journalctl -u loki -n 50 --no-pager
+```
+
+这条命令直接显示 Loki 最近的 50 条服务日志。根据其中的报错，检查配置文件或数据目录的权限。
+
+> **记录**
+>
+> ① 服务状态、`/ready` 返回结果和数据目录分别是什么？
+>
+> 答：loki 服务状态为 active；访问 /ready 返回 ready；数据目录为`/var/lib/loki`
+>
+> ② 若启动失败，报错是什么，怎样处理？未遇到则填写“未遇到”。
+>
+> 答：未遇到
+
+保存 `imgs/lab5_loki.png`，保留状态检查与 `/ready` 的命令和结果。
+
+![Loki 健康检查](imgs/lab5_loki.png)
+
+> **检查点**：看到 `active` 和 `ready`，说明 Loki 已经准备好了。下一步要写入并查到一条新日志，确认整个过程正常。
+
+---
+
+## 四、任务 3：配置 Alloy，确认日志进入 Loki
+
+rsyslog 负责把日志写入文件，Alloy 负责读取文件并发送给 Loki。接下来要确认两件事：Alloy 有权限读这些文件，发送地址也配置正确。
+
+### 4.1 配置 Alloy，检查它能否读取日志
+
+```bash
+cd ~/Lab5
+sudo bash install.sh alloy
+```
+
+脚本会写入 Alloy 配置，并把运行服务的 `alloy` 用户加入 `adm` 用户组。Ubuntu 上的许多日志允许这个组的成员读取，重启服务后，新权限才能生效。
+
+```bash
+systemctl is-active alloy
+```
+
+正常应输出 `active`。随后以 `alloy` 用户的身份，试着读取一行日志：
+
+```bash
+sudo -u alloy head -n 1 /var/log/syslog
+```
+
+`sudo -u alloy` 指定使用 `alloy` 用户，`head -n 1` 只读第一行。正常应显示一行日志；如果出现 `Permission denied`，说明没有读取权限。
+
+```bash
+sudo -u alloy head -n 1 /var/log/auth.log
+```
+
+这次读取的是 `auth.log`，它通常记录登录、sudo 等活动。管理员 root 能读，不代表 Alloy 也能读。遇到权限错误时，检查文件所属的用户组和目录权限，不要直接改成所有人都能读写的 `777`。
+
+### 4.2 看懂“从哪里读”和“往哪里发”
+
+```bash
+sudo cat /etc/alloy/config.alloy
+```
+
+先找到负责发送日志的这一段：
+
+```hcl
+loki.write "local" {
+  endpoint {
+    url = "http://127.0.0.1:3100/loki/api/v1/push"
+  }
+}
+```
+
+`loki.write` 负责发送日志，`"local"` 是给这一段配置起的名字。`endpoint` 里的 `url` 就是接收日志的地址。这里的 `127.0.0.1` 表示 Alloy 所在的 Ubuntu 虚拟机。
+
+再找到负责读文件的 `loki.source.file "linux_logs"`，重点看下面几项：
 
 | 配置内容 | 回答的问题 |
 | :--- | :--- |
@@ -86,8 +399,7 @@ curl -sS -G http://127.0.0.1:3100/loki/api/v1/query_range \
 >
 > ① 返回了哪些 `job`？API 返回的本人新日志原文是什么？
 >
-> 答：API 返回的 job：`syslog`
-API 返回本人新日志原文：`user123-VMware-Virtual-Platform lab3_read: student_id=2024010014 name=李冰冰 action=write_test result=success`
+> 答：API 返回的 job：`syslog`API 返回本人新日志原文：`user123-VMware-Virtual-Platform lab3_read: student_id=2024010014 name=李冰冰 action=write_test result=success`
 >
 > ② 如果只看到 `success`，而 `data.result` 为空，你会先检查什么？
 >
@@ -244,8 +556,6 @@ sudo true
 | 在 syslog 中查本人测试日志 | `{job="syslog"} |= "student_id=2024010014" |= "lab3_read" |= "action=write_test"` | 查询到本人logger生成、action=write_test的测试日志记录 |
 | 筛选本人结果为 success 的测试日志 | `{job="syslog"} |= "student_id=2024010014" |= "lab3_read" |= "result=success"` | 筛选出本人测试中result字段为success的测试日志 |
 | 查询 sudo 认证活动 | `{job="auth"} |= "sudo"` | 获取系统sudo命令执行、密码校验相关的认证操作日志 |
-
-
 
 完成这三条查询后，你就检查了日志从写入文件、发送到 Loki，再到网页显示的整个过程，也比较了不同来源的记录。
 
