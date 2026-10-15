@@ -553,9 +553,9 @@ sudo true
 
 | 查询目的 | 实际 LogQL | 查到的结果摘要 |
 | :--- | :--- | :--- |
-| 在 syslog 中查本人测试日志 |`{job="syslog"} |= "student_id=2024010018" |
-| 筛选本人结果为 success 的测试日志 |`{job="syslog"} |= "student_id=2024010018" |
-| 查询 sudo 认证活动 |`{job="auth"} |= "sudo"` |
+| 在 syslog 中查本人测试日志 |`{job="syslog"} |查询到 syslog 中本人生成的测试日志，包含学号、姓名、write_test 动作记录 |
+| 筛选本人结果为 success 的测试日志 |`{job="syslog"} |查询到本次测试执行成功的日志，日志中`result=success`标记测试成功 |
+| 查询 sudo 认证活动 |`{job="auth"} |查询到 auth 认证日志，包含 ubuntu 用户使用 sudo 切换 root、执行命令的登录与关闭会话记录 |
 
 完成这三条查询后，你就检查了日志从写入文件、发送到 Loki，再到网页显示的整个过程，也比较了不同来源的记录。
 
