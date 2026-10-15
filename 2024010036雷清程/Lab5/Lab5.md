@@ -153,7 +153,7 @@ dpkg-query -W grafana loki alloy nginx
 >
 > Grafana、Loki、Alloy 的版本分别是什么？nginx 是否已经安装？
 >
-> 答：Grafana 版本为 13.2.3，Loki 版本为 3.7.8，Alloy 版本为 1.20.1-1；nginx 已安装，版本为 1.24.0-2ubuntu7.18。
+> 答：Grafana 版本：13.2.3；Loki 版本：3.7.8；Alloy 版本：1.20.1-1。nginx 已经安装，版本为 1.24.0-2ubuntu7.18。
 
 下载失败时，先阅读安装命令的报错，再按提示检查网络、软件源或磁盘空间。处理后可以重新执行 `packages`。**安装成功后再继续下一步**，后面三个配置步骤不会重复下载软件。
 
@@ -183,7 +183,7 @@ sudo grep 'student_id=你的学号' /var/log/syslog | tail -n 1
 
 > **记录**：rsyslog 是否为 `active`？`/var/log/syslog` 中是否出现了本人的测试日志？
 >
-> 答：rsyslog 状态为`active`；syslog 中成功出现本人测试日志：`lab3_read[3293]: student_id=2024010029 name=李欧 action=write_test result=success`。
+> 答：
 
 保存 `imgs/lab5_prepare.png`，保留本地测试日志的查询命令、本人日志和 2.3 节的软件版本输出。
 
@@ -248,11 +248,11 @@ sudo journalctl -u loki -n 50 --no-pager
 >
 > ① 服务状态、`/ready` 返回结果和数据目录分别是什么？
 >
-> 答：loki 服务状态`active`；访问`/ready`返回`ready`；数据存储目录`/var/lib/loki`。
+> 答：服务状态为`active`；`/ready`接口返回`ready`；数据目录为`/var/lib/loki`。
 >
 > ② 若启动失败，报错是什么，怎样处理？未遇到则填写“未遇到”。
 >
-> 答：未遇到。
+> 答：未遇到
 
 保存 `imgs/lab5_loki.png`，保留状态检查与 `/ready` 的命令和结果。
 
@@ -342,11 +342,11 @@ loki.write "local" {
 >
 > ① Alloy 能否正常读取上面的两个文件？
 >
-> 答：Alloy 可以正常读取`/var/log/syslog`与`/var/log/auth.log`，无 Permission denied 权限报错。
+> 答：是
 >
 > ② 哪个配置项决定“读哪个文件”？哪个决定“发到哪里”？`forward_to` 把读到的日志交给了谁？
 >
-> 答：`loki.source.file`的`targets`决定读取哪些日志文件；`loki.write`内`endpoint url`决定日志发送地址；`forward_to`将读取到的日志交给`loki.write.local.receiver`组件发送给 Loki。
+> 答：`targets`配置项决定读取哪些文件；`loki.write`中的`endpoint.url`决定日志发送的目标地址；`forward_to`将读到的日志交给`loki.write.local.receiver`。
 
 ### 4.3 写入新日志，用 API 查到同一条记录
 
@@ -399,11 +399,12 @@ curl -sS -G http://127.0.0.1:3100/loki/api/v1/query_range \
 >
 > ① 返回了哪些 `job`？API 返回的本人新日志原文是什么？
 >
-> 答：返回 job 包含`syslog`；本人日志：`lab3_read[3293]: student_id=2024010029 name=李欧 action=write_test result=success`。
+> 答：返回的 job 有`auth`、`nginx_error`、`syslog`。
+新日志原文：`2026-10-11T15:53:47.337188+08:00 xdj-VMware-Virtual-Platform lab3_read: student_id=2024010038 name=许定佳 action=write_test result=success`
 >
 > ② 如果只看到 `success`，而 `data.result` 为空，你会先检查什么？
 >
-> 答：先检查本地 syslog 是否产生新日志；检查 Alloy 是否拥有日志文件读取权限；检查 Alloy 服务运行状态；核对查询语句、时间范围参数。
+> 答：检查 Alloy 服务状态，确认 Alloy 是否正常运行；检查 Alloy 配置文件，确认采集路径、forward_to 推送配置是否正确；检查本地 syslog，确认测试日志是否成功写入本地文件；检查查询 Loki 的时间范围，Loki 日志查询对时间区间敏感，若时间范围选取得不合适会查不到结果。
 
 保存 `imgs/lab5_alloy.png`，保留文件读取权限验证、`job` 查询和包含本人日志的 API 结果；可以合理拼图。
 
@@ -453,7 +454,7 @@ hostname -I
 
 > **记录**：浏览器实际访问地址是什么？为什么浏览器用虚拟机 IP，而数据源配置里可以用 `127.0.0.1`？
 >
-> 答：浏览器访问地址：`http://虚拟机IP:3000`。Windows 浏览器运行在宿主机，`127.0.0.1`指向本机 Windows，必须填写虚拟机 IP 访问虚拟机内 Grafana；Grafana 与 Loki 都运行在同一台 Ubuntu 虚拟机内部，虚拟机内`127.0.0.1`可以互相访问。
+> 答：浏览器实际访问地址：`http://192.168.156.128:3000`原因：Windows 浏览器在宿主机，`127.0.0.1`代表**Windows 本机**，不能访问虚拟机里的 Grafana，必须填写虚拟机的 IP`192.168.156.128`才能跨主机访问虚拟机服务。Grafana 和 Loki 都部署在 Ubuntu 虚拟机内部，Grafana 程序运行在虚拟机系统里，此时虚拟机内的`127.0.0.1`代表**虚拟机本机**，所以数据源配置填写`http://127.0.0.1:3100`可以直接访问同虚拟机内的 Loki。
 
 保存 `imgs/lab5_datasource.png`，保留 Loki 数据源名称、连接地址和测试成功的结果。
 
@@ -495,11 +496,12 @@ hostname -I
 >
 > ① 网页查到的完整日志原文是什么？与 API 返回的记录是否一致？
 >
-> 答：网页日志原文：`lab3_read[3293]: student_id=2024010029 name=李欧 action=write_test result=success`；网页与 API 返回日志内容完全一致。
+> 答：2026-10-11 15:47:39 xdj-VMware-Virtual-Platform lab3_read: student_id=2024010038 name=许定佳 action=write_test result=success
+> 一致
 >
 > ② 这条日志的 `job`、`host`、`filename` 分别是什么？
 >
-> 答：`job="syslog"`，`host`为虚拟机主机名，`filename="/var/log/syslog"`。
+> 答：job：`syslog`host：`xdj-VMware-Virtual-Platform`filename：`/var/log/syslog`
 
 保存 `imgs/lab5_explore.png`，保留数据源、时间范围、查询语句、本人日志正文和展开后的标签。
 
@@ -521,7 +523,8 @@ hostname -I
 
 > **记录**：这条查询查到了什么？其中 `job="syslog"` 和 `|= "result=success"` 各起什么作用？
 >
-> 答：查询得到本人标记为 result=success 的测试日志。`job="syslog"`是流选择器，筛选 job 标签等于 syslog 的日志流；`|="result=success"`是行过滤，只保留日志正文包含`result=success`的日志行。
+> 答：查询查到**包含`student_id=2024010038`、`lab3_read`、`result=success`的实验日志**。
+ `job="syslog"`：标签过滤，指定从 job 为 syslog 的日志流中检索数据，确定日志来源。`|= "result=success"`：行过滤，表示只保留日志正文里面包含字符串`result=success`的日志行。
 
 ### 6.2 查找一次 sudo 操作的日志
 
@@ -553,9 +556,9 @@ sudo true
 
 | 查询目的 | 实际 LogQL | 查到的结果摘要 |
 | :--- | :--- | :--- |
-| 在 syslog 中查本人测试日志 |{job="syslog"} \|= "student_id=2024010026" | 查到本人logger生成的测试日志，包含学号、姓名陆永林，action=write_test result=success |
-| 筛选本人结果为 success 的测试日志 |{job="syslog"} \|= "student_id=2024010026" \|= "lab3_read" \|= "result=success"| 筛选出本人测试日志内result字段等于success的记录 |
-| 查询 sudo 认证活动 |{job="auth"} \|= "sudo"|查到虚拟机终端执行sudo命令对应的认证日志，包含操作时间、操作用户 |
+| 在 syslog 中查本人测试日志 |`{job="syslog"} \|= "student_id=2024010038" \|= "lab3_read" \|= "action=write_test"` |找到我发送的自定义测试日志
+| 筛选本人结果为 success 的测试日志 |`{job="syslog"} \|= "student_id=2024010038" \|= "lab3_read" \|= "result=success"` |筛选出执行结果为success的本人测试日志 |
+| 查询 sudo 认证活动 |`{job="auth"} \|= "sudo"`|获取sudo操作相关的认证日志 |
 
 完成这三条查询后，你就检查了日志从写入文件、发送到 Loki，再到网页显示的整个过程，也比较了不同来源的记录。
 
@@ -581,15 +584,15 @@ Lab6 会继续使用这些成果：
 
 1. 本地文件里有自己的日志，但用 Loki API 查不到，你会先检查哪两处？如果 API 能查到，而网页查不到，又该检查什么？
 
-   > 填写：先检查 Alloy 服务状态与日志文件读取权限，再检查 Alloy 推送到 Loki 的目标地址配置是否正确。API 可查到网页查不到，则检查 Grafana 选中的数据源是否为 Loki、网页查询语句与时间范围是否和 API 保持一致。
+   > 填写：本地有日志但 Loki API 查不到，优先检查Alloy 是否正常采集该文件、日志标签 job 配置是否正确。API 能查到但网页查不到，检查 Grafana 网页的时间范围是否匹配日志产生时间。
 
 2. 用自己的话说明，一条日志怎样经过“logger → 文件 → Alloy → Loki → Grafana”。rsyslog 和 Alloy 分别做什么？日志内容由 Grafana 保存吗？
 
-   > 填写：logger 生成日志消息交给 rsyslog；rsyslog 按照系统规则写入`/var/log/syslog`磁盘文件；Alloy 读取 syslog 文件，打上标签后推送给 Loki；Loki 持久化存储日志；Grafana 调用 Loki 查询接口展示日志。rsyslog 负责接收日志消息并写入本地磁盘文件；Alloy 负责读取本地日志文件、打标签转发日志。Grafana 不保存日志内容，日志全部存储在 Loki 中。
+   > 填写：logger 命令生成日志写入系统日志文件；rsyslog 负责接收、分发日志写入文件；Alloy 读取日志文件，加上标签后发给 Loki 存储。Grafana 只负责查询展示，不保存日志内容。
 
 3. `job`、完整 URI（请求地址）、HTTP 状态码，哪些通常只有少量不同值，哪些可能有很多？为什么不适合把日志里的所有内容都作为标签保存？
 
-   > 填写：`job`、HTTP 状态码取值数量少；完整 URI 请求地址会产生大量不同取值。Loki 对标签建立索引，如果把所有日志内容全部作为标签，会产生海量日志流，索引急剧膨胀，消耗大量存储与查询性能。
+   > 填写：job、HTTP 状态码取值少；完整 URI 取值很多。标签索引会占用大量存储，如果全部日志内容作为标签，标签基数爆炸，查询性能急剧下降。
 
 ---
 
