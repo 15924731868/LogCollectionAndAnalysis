@@ -153,7 +153,7 @@ dpkg-query -W grafana loki alloy nginx
 >
 > Grafana、Loki、Alloy 的版本分别是什么？nginx 是否已经安装？
 >
-> 答：
+> 答：Grafana 版本：13.2.3; Loki 版本：3.7.8; Alloy 版本：1.20.1-1; nginx已经成功安装，版本为1.24.0-2ubuntu7.18
 
 下载失败时，先阅读安装命令的报错，再按提示检查网络、软件源或磁盘空间。处理后可以重新执行 `packages`。**安装成功后再继续下一步**，后面三个配置步骤不会重复下载软件。
 
@@ -183,7 +183,7 @@ sudo grep 'student_id=你的学号' /var/log/syslog | tail -n 1
 
 > **记录**：rsyslog 是否为 `active`？`/var/log/syslog` 中是否出现了本人的测试日志？
 >
-> 答：
+> 答：rsyslog 状态为 active；/var/log/syslog 中成功出现本人的测试日志
 
 保存 `imgs/lab5_prepare.png`，保留本地测试日志的查询命令、本人日志和 2.3 节的软件版本输出。
 
@@ -248,11 +248,11 @@ sudo journalctl -u loki -n 50 --no-pager
 >
 > ① 服务状态、`/ready` 返回结果和数据目录分别是什么？
 >
-> 答：
+> 答：Loki 服务状态为active；访问/ready最终返回ready；数据目录为/var/lib/loki。
 >
 > ② 若启动失败，报错是什么，怎样处理？未遇到则填写“未遇到”。
 >
-> 答：
+> 答：未遇到
 
 保存 `imgs/lab5_loki.png`，保留状态检查与 `/ready` 的命令和结果。
 
@@ -342,11 +342,13 @@ loki.write "local" {
 >
 > ① Alloy 能否正常读取上面的两个文件？
 >
-> 答：
+> 答：是
 >
 > ② 哪个配置项决定“读哪个文件”？哪个决定“发到哪里”？`forward_to` 把读到的日志交给了谁？
 >
-> 答：
+> 答：`loki.source.file` 的 `targets` 列表决定读取哪些日志文件；
+`loki.write` 的 `endpoint` 决定日志发送的目标地址（Loki 服务地址）；
+`forward_to = [loki.write.local.receiver]`，把读取到的日志交给 `loki.write.local.receiver`，推送到 Loki。
 
 ### 4.3 写入新日志，用 API 查到同一条记录
 
@@ -399,11 +401,12 @@ curl -sS -G http://127.0.0.1:3100/loki/api/v1/query_range \
 >
 > ① 返回了哪些 `job`？API 返回的本人新日志原文是什么？
 >
-> 答：
+> 答：返回 job：`auth`、`nginx_error`、`syslog`
+新日志原文：`2026-10-15T09:24:08.164070+08:00 zym-VMware-Virtual-Platform lab3_read: student_id=2024010039 name=zym action=write_test result=success`
 >
 > ② 如果只看到 `success`，而 `data.result` 为空，你会先检查什么？
 >
-> 答：
+> 答：1. 检查 Alloy 服务状态是否为 active，确认 Alloy 正常采集日志；2. 检查日志是否已经写入本地`/var/log/syslog`；3. 等待一小段时间（日志推送存在延迟），重新执行查询；4. 核对 LogQL 查询语句里的学号、关键词是否拼写错误；5. 检查 Alloy 是否有读取 syslog 文件的权限。
 
 保存 `imgs/lab5_alloy.png`，保留文件读取权限验证、`job` 查询和包含本人日志的 API 结果；可以合理拼图。
 
@@ -453,7 +456,8 @@ hostname -I
 
 > **记录**：浏览器实际访问地址是什么？为什么浏览器用虚拟机 IP，而数据源配置里可以用 `127.0.0.1`？
 >
-> 答：
+> 答：浏览器实际访问地址：`http://192.168.30.128:3000`
+原因：1. Windows 主机访问虚拟机里的 Grafana，`127.0.0.1`代表本机（Windows），无法访问虚拟机服务，必须填写**虚拟机网卡 IP（192.168.30.128）**才能连通虚拟机内 Grafana。2. Grafana 与 Loki 都运行在同一台 Ubuntu 虚拟机内部，在虚拟机系统内部，`127.0.0.1`就是虚拟机本机，所以 Grafana 可以直接用`http://127.0.0.1:3100`访问同机的 Loki 服务。
 
 保存 `imgs/lab5_datasource.png`，保留 Loki 数据源名称、连接地址和测试成功的结果。
 
