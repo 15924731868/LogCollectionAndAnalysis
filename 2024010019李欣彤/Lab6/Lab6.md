@@ -560,7 +560,9 @@ sum(count_over_time({job="nginx_access"}[1m]))
 
 如果看不到正确字段，先停止统计，逐字符对照原文与模板，尤其检查引号、方括号、固定的 `-` 和空格。不属于 combined 格式的旧日志，不一定能被这条模板正确解析。
 
-> method：`GET`；uri：`/admin`；status：`404`；ua：`loglab-scanner-2024010019/1.0`。解析提取出的字段内容和第五节手工拆解日志得到的结果完全一致。
+> **记录**：选中的本人日志被提取出的 `method`、`uri`、`status`、`ua` 分别是什么？与手工拆解是否一致？
+>
+> 答： method：`GET`；uri：`/admin`；status：`404`；ua：`loglab-scanner-2024010019/1.0`。解析提取出的字段内容和第五节手工拆解日志得到的结果完全一致。
 
 ### 6.4 按状态码分组统计
 
