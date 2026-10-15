@@ -495,7 +495,7 @@ hostname -I
 >
 > ① 网页查到的完整日志原文是什么？与 API 返回的记录是否一致？
 >
-> 答：网页日志原文：`lab3_read[3293]: student_id=2024010026 name=李欧 action=write_test result=success`；网页与 API 返回日志内容完全一致。
+> 答：网页日志原文：`lab3_read[3293]: student_id=2024010029 name=李欧 action=write_test result=success`；网页与 API 返回日志内容完全一致。
 >
 > ② 这条日志的 `job`、`host`、`filename` 分别是什么？
 >
