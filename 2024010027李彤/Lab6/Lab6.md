@@ -772,3 +772,63 @@ Explore 适合临时验证查询；Dashboard 把查询和展示方式保存下�
 - [LogQL 日志查询](https://grafana.com/docs/loki/latest/query/log_queries/)：了解 pattern、json、logfmt 等解析器。
 - [LogQL 指标查询](https://grafana.com/docs/loki/latest/query/metric_queries/)：区分窗口计数、速率和分组聚合。
 - [Grafana 的 Loki 查询编辑器](https://grafana.com/docs/grafana/latest/datasources/loki/query-editor/)：了解 Range、Instant 和查询变量。
+
+---
+
+## 十一、截图与提交
+
+本次单独提交 **1 份 Markdown 报告和 5 张截图**。图片引用已放在各操作后面，下表用于提交前核对。
+
+| 操作位置 | 截图必须体现的内容 | 文件名 |
+| :--- | :--- | :--- |
+| 3.3、5.2 节 | 站点响应验证、本人 access log 原文和逐字段标注 | `lab6-fields.png` |
+| 第四节 | 实际流量循环、Explore 查询和带本人学号的 User-Agent 日志 | `lab6-explore.png` |
+| 6.1 节 | 请求量查询、时间范围和窗口统计曲线 | `lab6-count.png` |
+| 6.3、6.4 节 | pattern 分组查询、状态码图例和曲线，可附解析字段对照 | `lab6-status.png` |
+| 7.2 节 | 已保存 Dashboard 的名称、时间范围和有实际内容的面板 | `lab6-dashboard.png` |
+
+- 使用电脑截图功能，文字清晰可读，严禁手机拍摄屏幕。
+- 终端截图应同时显示命令和对应输出，并能辨认本人虚拟机的用户名或主机名。
+- 网页查询截图应保留数据源、时间范围、查询语句和结果；看板截图按上表保留整体内容。
+- 同一任务可合理拼图或裁剪无关区域，但不能裁掉命令、时间或关键结果。
+- 使用本人实验结果，截图中不得出现密码、私钥或访问令牌；不要使用本文的格式示例代替本人日志。
+- 图片保存在 `imgs/`，文件名、扩展名和大小写与表格一致。
+
+提交前确认目录结构：
+
+```text
+学号姓名/
+└── Lab6/
+    ├── Lab6.md
+    └── imgs/
+        ├── lab6-fields.png
+        ├── lab6-explore.png
+        ├── lab6-count.png
+        ├── lab6-status.png
+        └── lab6-dashboard.png
+```
+
+### 提交前检查
+
+| 检查项 | 确认 |
+| :--- | :--- |
+| 沿用 Lab5 平台，验证过 8080 演示站和本地访问日志 | ☐ |
+| 运行过流量循环，记录实际次数，并用带本人学号的 User-Agent 查到请求 | ☐ |
+| 粘贴本人实际日志，完成 combined 格式的九项字段说明 | ☐ |
+| 能解释显示时间范围与 `[5m]`、`[1m]` 窗口的区别，没有把窗口计数写成 QPS | ☐ |
+| 先检查 pattern 字段，再按 status 分组统计，没有只用正文搜索代替精确统计 | ☐ |
+| 面板使用 Explore 验证过的查询，实际 LogQL 已完整写入报告 | ☐ |
+| Dashboard 已保存，离开页面后重新打开仍可查看到面板 | ☐ |
+| 全部就地记录和 3 道简答题均已填写 | ☐ |
+| 打开 `Lab6.md` 确认 5 张图片都能正常显示 | ☐ |
+| 保留 nginx 演示站、Lab5 平台和 Dashboard，创建了可用快照 | ☐ |
+
+按仓库 README 的流程单独提交 Lab6，PR 标题为 `[学号姓名]Lab6作业提交`。
+
+---
+
+## 十二、截止时间
+
+**2026 年 10 月 22 日 23:59:59（北京时间）**
+
+请在截止时间前创建 Lab6 的 PR 并完成推送。按仓库 `README.md` 第 4 节的规则，10 月 23 日 00:00 起新建 PR 或向已有 PR 推送修改均算超时；审核未通过时也应在截止前完成修改。
