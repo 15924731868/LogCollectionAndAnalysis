@@ -683,7 +683,7 @@ Explore 适合临时验证查询；Dashboard 把查询和展示方式保存下�
 在下面填写**实际使用、可以复制运行**的面板配置：标题、实际 LogQL，以及它回答的问题。
 
 > 答：标题：最近 5 分钟请求量
-LogQL：logqlsum(count_over_time({job="nginx_access"}[5m]))
+LogQL：sum(count_over_time({job="nginx_access"}[5m]))
 回答的问题：统计 Nginx 服务每 5 分钟窗口内的总请求数量，展示请求量随时间变化的趋势。
 
 保存 `imgs/lab6-dashboard.png`，保留 Dashboard 名称、时间范围、面板标题和实际曲线。这张截图用于证明看板已保存，不代替报告里的查询文本。
