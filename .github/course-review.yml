@@ -251,3 +251,42 @@ assignments:
       - lab6-status.png 应显示按状态码分组的完整查询、时间范围和 200 与 404 的图例与曲线；pattern 展开的字段对照可以拼入，不单独强制。
       - lab6-dashboard.png 应显示 Dashboard 名称（Lab6-学号）、时间范围、面板标题“最近 5 分钟请求量”和有实际内容的曲线，用于证明看板已保存。
       - 报告与截图的一致性：曲线读数、时间点不要求与报告逐字一致，方向一致即可；报告与截图出现明显矛盾（如报告称查到本人标记但截图中缺少查询或结果）时指出即可，不因此判不合格。
+  Lab7:
+    deadline: "2026-10-29T23:59:59+08:00"
+    report_template: homework/Lab7/Lab7.md
+    required_files:
+      - Lab7.md
+      - imgs/lab7-overview.png
+      - imgs/lab7-top-ip.png
+      - imgs/lab7-users.png
+      - imgs/lab7-lock-success.png
+      - imgs/lab7-ban.png
+    template_metrics:
+      enabled: true
+      report_file: Lab7.md
+      characters: ['#', '-', '*', '`', '|', '>']
+      max_file_bytes: 200000
+    vision_files:
+      - imgs/lab7-overview.png
+      - imgs/lab7-top-ip.png
+      - imgs/lab7-users.png
+      - imgs/lab7-lock-success.png
+      - imgs/lab7-ban.png
+    review_points:
+      - 任务 1（3.1–3.4 节）：能用 systemctl 和 curl 证明 Loki、Grafana、Alloy、SSH 正常；能看到 attack.sh 的真实执行输出；能在 {job="auth"} 中查到 Failed password 日志，并说明来源 IP 与目标用户。真实攻击可能因 sshd 提前拒绝 root 等原因少于 13 行，只要看到多个来源、多个用户名的连续失败即可；允许回退到 127.0.0.2/127.0.0.3。
+      - 任务 2（4.1–4.2 节）：能按来源 IP 聚合，默认 203.0.113.21 的失败数应多于 198.51.100.77；回退模式或 sshd 提前拒绝导致数字有差异时，以本人查询结果为准。能把聚合结果与原始日志、时间范围对应起来。
+      - 任务 3（5 节）：能把失败用户名分成 invalid user（如 admin、oracle、test）与真实用户（本人用户名、root），并说明哪类更危险；分类表应来自实际查询，不能照抄讲义。
+      - 任务 4（6 节）：能查到 {job="auth"} |= "temporarily locked" 为空，能用 faillock --user 或 grep -R pam_faillock 说明 Ubuntu 24.04 默认未启用 faillock；能指出这是防线缺口，而不是把“没有锁定行”当成查询错误。若学生做了 12.2 选读并出现真实锁定行，也可接受。
+      - 任务 5（7 节）：能用 Accepted 行回答“谁、从哪、何时”三问；默认成功登录来自宿主机（如 192.168.80.1），应判断为爆破未得手、成功登录另有解释；若确有外部来源的成功登录，按证据判断。结论要基于日志，不臆测。
+      - 任务 6（8 节）：能按“先 allow OpenSSH、再 allow 3000/tcp、最后 enable”的顺序启用 ufw，用 ufw deny from 封禁攻击 IP，并用 ufw status numbered 验证；实验后能 disable。只封一个 IP 或两个都封均可，但报告要写清。
+      - 知识问答（10 节）：三题齐全，能区分“单条失败”与“暴力破解”、说明来源 IP 聚合和账号锁定防线的作用；答案与本人日志一致。
+      - 审核范围：第三节至第八节为必做，第十节 3 题必答，第十三节 5 张截图必交；第十二节为选读，不要求执行或截图。报告缺少必做小节、核心查询或截图时按未完成处理。
+      - 合理差异：IP、时间、用户名、失败行数、是否回退到回环别名以本人环境为准；允许 sshd 提前拒绝 root、允许 13 次尝试少于 13 行、允许成功登录来自宿主机。不得把合成日志、旧版 Lab7-auth.log 或讲义示例当成本人真实攻击结果；不得声称完成了未实际执行的 faillock 选读。
+    vision_review_points:
+      - 截图总要求：使用学生本人环境的电脑截图，命令和关键结果清晰可辨，能认出本人账号、学号或主机信息。允许合理拼图、裁剪无关区域、只显示代表性输出，以及不同界面语言和主题；不得使用手机拍屏，不得出现密码、私钥或访问令牌。截图应与报告填写的结果一致。
+      - lab7-overview.png 应显示 {job="auth"} 的 Failed password 查询、时间范围和至少一行展开的标签（job、filename 或 detected_level）；日志必须是真实 sshd 失败行，不能是 Lab7-auth.log 或讲义示例。
+      - lab7-top-ip.png 应显示按来源 IP 聚合的 LogQL、时间范围和 203.0.113.21 与 198.51.100.77 的计数（回退模式下为 127.0.0.2/127.0.0.3），能与报告数字对应。
+      - lab7-users.png 应显示失败用户名查询、时间范围和 invalid user 与真实用户的分类结果；至少要能辨认 admin、oracle、test 和本人用户名或 root 中的多数。
+      - lab7-lock-success.png 应显示锁定检查（temporarily locked 查询为空，或 faillock/grep 的输出）以及 Accepted 成功登录行；两者可在同一张图中拼接，但要能辨认查询与结果。
+      - lab7-ban.png 应显示 ufw status numbered 中的封禁规则、以及实验后 ufw disable 或删除规则的证据；只显示封禁或只显示关闭都可接受，但报告要说明当前状态。
+      - 报告与截图的一致性：查询、IP、用户名、时间范围和结论方向应一致；报告称查到真实失败但截图缺少查询或结果、或把合成日志当真实攻击结果时指出即可，不因此判不合格。
