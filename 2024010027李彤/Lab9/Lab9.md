@@ -455,10 +455,10 @@ Where 取记录来源标签（`job="auth"`、`host=...`），Who 取正文中的
 > | 项目 | 预期 | 实测 |
 > | :--- | :--- | :--- |
 > | Loki 中 `lab9a` 的条数 | 无结果（0 条） |0 条 |
-> | Loki 中 `lab9b` 的条数 | 12～18 |14 条 |
+> | Loki 中 `lab9b` 的条数 | 12～18 |0条 |
 > | 空白区间起止时间 | 阶段 A 期间，长度约 1 分钟 | 2026-11-05 10:48:00 ~ 2026-11-05 10:50:00|
 > | 空白区间前后均有记录 | 是 |是 |
-> | Loki 中 `lab9b` 记录的首末时间 | 阶段 B 期间，约 1 分钟 |2026-11-05 10:53:00 ~ 2026-11-05 10:54:00|
+> | Loki 中 `lab9b` 记录的首末时间 | 阶段 B 期间，约 1 分钟 |无 lab9b 记录，无对应时间|
 >
 > `lab9a` 的计数查询：
 >
@@ -649,8 +649,8 @@ stat -c '%n inode=%i size=%s mtime=%y ctime=%z' /var/log/auth.log /var/log/auth.
 
 | 结论 | 支持证据 | 实测是否一致 |
 | :--- | :--- | :---: |
-| 阶段 A：采集环节中断 | `lab9a` 在 `auth.log.1` 中约 12～18 行，Loki 中无结果；`__path__` 不含 `.1`；positions 只有 `auth.log`；journal 与 Alloy 停止记录对应 | |
-| 阶段 B：本机文件被修改 | `lab9b` 在 Loki 与 journal 中有记录，`auth.log` 与 `auth.log.1` 中均为 0 | |
+| 阶段 A：采集环节中断 | `lab9a` 在 `auth.log.1` 中约 12～18 行，Loki 中无结果；`__path__` 不含 `.1`；positions 只有 `auth.log`；journal 与 Alloy 停止记录对应 |否（auth.log.1、journal 都查不到 lab9a，也没有 Alloy 启停日志）|
+| 阶段 B：本机文件被修改 | `lab9b` 在 Loki 与 journal 中有记录，`auth.log` 与 `auth.log.1` 中均为 0 |否（Loki、journal 都查不到 lab9b）|
 
 > **报告记录**
 >
@@ -668,7 +668,7 @@ stat -c '%n inode=%i size=%s mtime=%y ctime=%z' /var/log/auth.log /var/log/auth.
 >
 > 4. `journalctl -u alloy` 中阶段 A 附近是否有 Stopped/Started 记录？
 >
->    实测：阶段 A 附近无 Stopped、Started 相关日志，Alloy 服务在此期间没有启停动作，持续运行。
+>    实测：阶段 A 附近无 Stopped、Started 相关日志本次实验观测不到 Alloy 启停记录
 
 > **检查点 ③**：采集路径、positions、journal、Alloy 服务记录、文件元数据均已核对；证据汇总表已填写；`lab9-alloy.png` 与 `lab9-journal.png` 已保存。
 
@@ -722,17 +722,17 @@ stat -c '%n inode=%i size=%s mtime=%y ctime=%z' /var/log/auth.log /var/log/auth.
 | :--- | :--- | :--- |
 | 靠前一段的账号 | `lab9a` |lab9a |
 | 靠前一段的起止时间 | 阶段 A 的空白区间 |2026-11-05 10:48:00 至 2026-11-05 10:49:00|
-| 靠前一段的缺口位置 | 采集环节（Alloy 停止） |采集环节中断 |
-| 靠前一段的关键证据 | `auth.log.1` 有、Loki 无、`__path__` 不含 `.1`、journal 有 |`auth.log.1` 和 journal 存在 lab9a 记录，Loki 无；Alloy 仅采集`/var/log/auth.log`，阶段 A Alloy 停止 |
+| 靠前一段的缺口位置 | 采集环节（Alloy 停止） |本次实测：auth.log.1、journal、Loki 均无 lab9a 记录，无法验证该结论 |
+| 靠前一段的关键证据 | `auth.log.1` 有、Loki 无、`__path__` 不含 `.1`、journal 有 |`__path__` 仅采集 `/var/log/auth.log`；但 auth.log.1、journal、Loki 均检索不到 lab9a 会话记录，缺少支撑证据 |
 | 靠后一段的账号 | `lab9b` | lab9b|
-| 靠后一段的起止时间 | 阶段 B 的采集时段 |2026-11-05 10:51:00 至 2026-11-05 10:52:00 |
-| 靠后一段的缺口位置 | 本机文件被修改 |采集完成后本地日志文件被修改 |
-| 靠后一段的关键证据 | Loki 有、`auth.log` 与 `auth.log.1` 均无、journal 有 |Loki、journal 存在 lab9b 记录，`auth.log`、`auth.log.1`检索不到 lab9b 记录|
+| 靠后一段的起止时间 | 阶段 B 的采集时段 |无 lab9b 记录，无对应时间区间  |
+| 靠后一段的缺口位置 | 本机文件被修改 |本次实测：Loki、journal、auth.log/auth.log.1 均无 lab9b 记录，无法验证该结论 |
+| 靠后一段的关键证据 | Loki 有、`auth.log` 与 `auth.log.1` 均无、journal 有 |所有来源均检索不到 lab9b 记录，无法验证结论|
 | `__path__` 的配置内容 | `/var/log/auth.log` |`/var/log/auth.log`，不包含 `.1` 轮转文件 |
 | positions 中的路径与读取位置 | 只有 `auth.log`，偏移接近文件大小 |仅跟踪 `/var/log/auth.log` |
 | `journalctl` 与 `auth.log` 的条数差异 | `lab9b` 在 journal 有记录、文本为 0 |journal 可以查到 lab9b，auth.log、auth.log.1 无 lab9b 记录 |
 | 两段缺失是否影响同一批记录 | 否，分别对应 `lab9a` 和 `lab9b` |否，lab9a 对应采集中断，lab9b 对应文件篡改 |
-| 两段的结论 | 采集环节中断 / 本机文件被修改 |阶段 A：采集环节中断；阶段 B：本机日志文件采集完成后被修改 |
+| 两段的结论 | 采集环节中断 / 本机文件被修改 |本次现场无法验证预设两段缺失结论，所有数据源均不存在 lab9a、lab9b 记录 |
 | 关键 LogQL | `sum(count_over_time({job="auth"} [1m]))`、`absent_over_time({job="auth"} [1m])` | `sum(count_over_time({job="auth"} [1m]))`、`absent_over_time({job="auth"} [1m])`|
 | 证据截图 | `lab9-loki-gap.png`、`lab9-local-count.png`、`lab9-alloy.png`、`lab9-journal.png` |`lab9-loki-gap.png`（Loki 空白区间截图）、`lab9-local-count.png`（grep 统计）、`lab9-alloy.png`（alloy 配置与 positions）、`lab9-journal.png`（journal 查询结果） |
 | 处置建议 | 告警、完整性校验、集中采集（任选一个方向） | 开启日志远端实时采集与告警；对本地日志做哈希完整性校验，防止日志被篡改|
