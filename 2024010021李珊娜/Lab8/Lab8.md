@@ -276,11 +276,11 @@ systemctl status alloy --no-pager
 >
 > 1. 8083 站点是否验证通过？`/`、`/admin`、`/.env` 的返回状态码分别是什么？
 >
->    答：8083 站点验证通过。`/` 返回 200，`/admin` 返回 403，`/.env` 返回 404。
+>    答：验证通过。`/` 返回 200；`/admin` 返回 403；`/.env` 返回 404
 >
 > 2. `{job="nginx_access"} |= "server_port=8083"` 包含哪些正常请求？来源 IP 是什么？若宿主机无法访问，使用哪两条请求作为对照？
 >
->    答：包含访问首页/和接口/api/orders?id=1的正常请求；正常流量来源 IP 为127.0.0.1；宿主机无法访问时，使用curl -A "Mozilla/5.0 (X11; Linux x86_64) Firefox/128.0" http://127.0.0.1:8083/、curl -A "Mozilla/5.0 (X11; Linux x86_64) Firefox/128.0" "http://127.0.0.1:8083/api/orders?id=1"两条请求作为对照。
+>    答：包含两条 curl 手工请求；来源 IP 是`127.0.0.1`；本次暂时没有宿主机浏览器请求，使用两条 curl 请求作为对照。
 
 ![概览](imgs/lab8-overview.png)
 
@@ -352,11 +352,11 @@ sudo tail -n 30 /var/log/nginx/access.log
 
 | 4W1R | 填写 |
 | :--- | :--- |
-| When 什么时候 |29/Oct/2026:08:12:23 +0800 |
-| Where 在哪里 |本机虚拟机 nginx 服务，标签host=lsn-VMware-Virtual-Platform，日志源/var/log/nginx/access.log |
-| Who 谁 |来源 IP 203.0.113.50，User-Agent 自报为`sqlmap/1.8`；该 UA 由 curl -A 设置，不能据此认定真实运行 sqlmap 工具 |
-| What 做了什么 | 向`/login`路径发送携带 SQL 注入 payload `admin'OR'1'='1` 的 GET 请求，尝试 SQL 注入探测|
-| Result 结果如何 |演示站对 `/login` 固定返回 `400`；该状态码只说明请求命中了对应 location，不能证明注入被识别、拦截或者注入成功|
+| When 什么时候 |31/Oct/2026:17:10:21 +0800 |
+| Where 在哪里 | 本机 nginx，标签 host=zym-VMware-Virtual-Platform，端口 8083|
+| Who 谁 |来源 203.0.113.50，User-Agent 自报为 sqlmap/1.8；该值由 curl -A 设置，不能据此认定真实工具 |
+| What 做了什么 | 向 /login 发送包含`admin'OR'1'='1`注入 payload 的 GET 请求|
+| Result 结果如何 |站点返回 400；该状态码只说明请求到达了对应 location，不能证明注入被识别、拦截或成功 |
 
 示例仅说明字段填写方式，报告应使用实际查询到的日志：
 
@@ -370,15 +370,15 @@ sudo tail -n 30 /var/log/nginx/access.log
 >
 > 1. 选择了哪一条日志？原文是什么？
 >
->    答：选取一条注入探测日志：203.0.113.50 - - [29/Oct/2026:16:14:20 +0800] "GET /login?user=admin'OR'1'='1 HTTP/1.1" 400 24 "-" "sqlmap/1.8" server_port=8083
+>    答：2026-10-31 17:10:21.082  UNK  203.0.113.50 -- [31/Oct/2026:17:10:21 +0800] "GET /login?user=admin'OR'1'='1 HTTP/1.1" 400 22 "-" "sqlmap/1.8" server_port=8083
 >
 > 2. 该日志的 4W1R 分别是什么？
 >
->    答：- When：`29/Oct/2026:16:14:20 +0800`                                                                                                                                                   Where：本机虚拟机 nginx 服务，标签`host=lsn-VMware-Virtual-Platform`，日志源`/var/log/nginx/access.log`                                                                                       Who：来源 IP `203.0.113.50`，自报 User-Agent 为`sqlmap/1.8`；该 UA 仅为脚本模拟设置，不能证明真实运行 sqlmap 工具                                                                               What：向`/login`路径发送携带 SQL 注入 payload `admin'OR'1'='1`的 GET 请求
+>    答：When：`31/Oct/2026:17:10:21 +0800`;Where：本机 Nginx 服务，标签 `host=zym-VMware-Virtual-Platform`，服务端口 8083;Who：来源 IP `203.0.113.50`，User-Agent 为 `sqlmap/1.8`；该 UA 是 curl -A 模拟设置，不代表真实运行 sqlmap;What：向 `/login` 路径发送带 SQL 注入 payload 的 GET 请求，参数 `user=admin'OR'1'='1`;Result：服务返回 400 状态码，请求到达 Nginx，该状态码仅代表路由匹配，不代表注入成功或被拦截
 >
 > 3. 攻击请求与正常请求在来源、User-Agent、路径上有哪些差异？
 >
->    答：来源上，正常请求来自127.0.0.1，攻击请求来自203.0.113.50；User-Agent 上，正常流量使用标准 Firefox 浏览器 UA，攻击流量使用sqlmap/1.8、Nikto/2.5.0或者简化伪装 UA；路径上，正常请求只访问/、/api/orders?id=1业务路径，攻击请求集中在后台、敏感文件、注入、路径穿越类探测路径。
+>    答：1. 来源：正常请求源 IP 为`127.0.0.1`；攻击请求源 IP 为`203.0.113.50`。2. User-Agent：正常请求 UA 简洁（curl 默认 UA）；攻击请求带有扫描器特征 UA，如`sqlmap/1.8`、`Nikto/2.5.0`，也有伪装浏览器`Mozilla/5.0`的探测。3. 访问路径：正常请求路径是业务正常接口，如`/`、`/api/orders?id=1`；攻击路径包含注入语句、敏感文件、后台目录、备份文件等探测路径，例如`/login?user=admin'OR'1'='1`、`/.env`、`/config.php.bak`、`../../etc/passwd`。
 
 ---
 
@@ -428,11 +428,11 @@ sum by (remote_addr) (
 >
 > 1. 请求数最多的来源 IP 是哪一个？请求数约为多少？
 >
->    答：请求最多的来源 IP 是203.0.113.50，一共有 9 条请求。
+>    答：来源 IP 是 **203.0.113.50**，一共 9 条请求。
 >
 > 2. 除攻击来源外还有哪些来源？分别对应什么请求？
 >
->    答：还有127.0.0.1，对应手工发起的两条正常 curl 请求，以及 web-attack.sh 脚本自带的两条正常对照访问，访问路径为/和/api/orders?id=1，属于正常业务流量。
+>    答：还有 `127.0.0.1`；对应：3.2 节手工测试请求、web-attack.sh 脚本自带的 2 条正常业务对照请求。
 
 ![来源 IP 聚合](imgs/lab8-top-ip.png)
 
@@ -476,16 +476,17 @@ sum by (http_user_agent) (
 >
 > 1. 出现了哪些 User-Agent？哪些具有自动化工具特征，哪些具有正常浏览器特征？
 >
->    答：出现 UA：`Nikto/2.5.0`、`sqlmap/1.8`、`Mozilla/5.0`、`Mozilla/5.0 (X11; Linux x86_64) Firefox/128.0`；
->自动化工具特征 UA：`Nikto/2.5.0`、`sqlmap/1.8`；
->正常浏览器特征 UA：`Mozilla/5.0 (X11; Linux x86_64) Firefox/128.0`；`Mozilla/5.0`是简化伪装 UA，属于攻击者模拟浏览器的探测。
+>    答：出现的 UA：`Nikto/2.5.0`、`sqlmap/1.8`、`Mozilla/5.0`。
+自动化工具特征 UA：`Nikto/2.5.0`、`sqlmap/1.8`（实验脚本 curl -A 模拟，仅为日志标记，不代表真实工具运行）
+浏览器特征 UA：`Mozilla/5.0`，其中一条是伪装浏览器的探测流量，其余是正常业务访问流量。
 >
 > 2. 同一 User-Agent 对应多少条请求？请求了哪些路径？
 >
->    答：Nikto/2.5.0：6 条，路径：/.env、/config.php.bak、/admin、/server-status、/wp-login.php、/../../etc/passwd
->sqlmap/1.8：2 条，路径：/login?user=admin'OR'1'='1
->Mozilla/5.0：1 条，路径：/wp-login.php
->Mozilla/5.0 (X11; Linux x86_64) Firefox/128.0：4 条，路径：/、/api/orders?id=1
+>    答：1. `Nikto/2.5.0`：6 条
+路径：`/.env`、`/config.php.bak`、`/admin`、`/server-status`、`/wp-login.php`、`../../etc/passwd`2. `sqlmap/1.8`：2 条
+路径：`/login?user=admin'OR'1'='1`3. `Mozilla/5.0`：1 条
+路径：`/wp-login.php`（伪装浏览器探测）4. 正常 Firefox UA `Mozilla/5.0 (X11; Linux x86_64)`：4 条
+路径：`/`、`/api/orders?id=1`（正常业务请求）
 
 ![扫描器 UA](imgs/lab8-scanner.png)
 
@@ -515,15 +516,15 @@ sum by (path, status) (
 
 | 路径 | 状态码 | 次数 | 说明 |
 | :--- | :--- | :--- | :--- |
-| `/` | 200 | | 正常首页，固定返回 200 |
-| `/api/orders` | 200 | | 正常 API，固定返回 200 |
-| `/admin` | 403 | | 后台探测；固定返回 403，不代表真实后台存在 |
-| `/login?...` | 400 | | 注入探测；固定返回 400，不代表注入被识别或拦截 |
-| `/.env` | 404 | | 敏感文件探测；固定返回 404，不代表真实文件不存在 |
-| `/config.php.bak` | 404 | | 备份文件探测；固定返回 404 |
-| `/wp-login.php` | 404 | | WordPress 路径探测；固定返回 404 |
-| `/server-status` | 403 | | 扫描器常用路径；固定返回 403 |
-| `/../../etc/passwd` | 404 或 400 | | 路径穿越探测；不同 nginx 版本可能不同，以实际日志为准 |
+| `/` | 200 | 0| 正常首页，固定返回 200 |
+| `/api/orders` | 200 |0 | 正常 API，固定返回 200 |
+| `/admin` | 403 |1 | 后台探测；固定返回 403，不代表真实后台存在 |
+| `/login?...` | 400 | 2| 注入探测；固定返回 400，不代表注入被识别或拦截 |
+| `/.env` | 404 | 1| 敏感文件探测；固定返回 404，不代表真实文件不存在 |
+| `/config.php.bak` | 404 | 1| 备份文件探测；固定返回 404 |
+| `/wp-login.php` | 404 | 2| WordPress 路径探测；固定返回 404 |
+| `/server-status` | 403 | 1| 扫描器常用路径；固定返回 403 |
+| `/../../etc/passwd` | 404 或 400 |1 | 路径穿越探测；不同 nginx 版本可能不同，以实际日志为准 |
 
 表中的 400/403/404 均由 `setup.sh` 的 `return` 指令生成，没有 WAF、应用或数据库参与判断。状态码只能说明请求命中了哪个 `location`，不能用于推断漏洞是否存在。
 
@@ -531,12 +532,12 @@ sum by (path, status) (
 >
 > 1. 哪些路径属于业务正常路径？哪些属于攻击探测路径？
 >
->    答：正常业务路径：/、/api/orders?id=1；
->攻击探测路径：/admin、/.env、/config.php.bak、/wp-login.php、/server-status、/login?user=admin'OR'1'='1、/../../etc/passwd。
+>    答：正常业务路径：`/`、`/api/orders`
+攻击探测路径：`/admin`、`/login?user=admin'OR'1'='1`、`/.env`、`/config.php.bak`、`/wp-login.php`、`/server-status`、`/../../etc/passwd`
 >
 > 2. 是否存在敏感路径返回 `200`？如果有，是哪一条？
 >
->    答：没有敏感探测路径返回 200；只有正常业务路径/、/api/orders?id=1返回 200。
+>    答：不存在敏感路径返回 200；返回 200 的只有正常业务路径 `/` 和 `/api/orders`，所有探测路径返回都是 400/403/404。
 
 ![路径与状态码](imgs/lab8-paths.png)
 
@@ -564,11 +565,12 @@ sum by (path, status) (
 >
 > 1. 正常流量的来源 IP 和 User-Agent 是什么？
 >
->    答：正常流量来源 IP 是127.0.0.1，User-Agent 是Mozilla/5.0 (X11; Linux x86_64) Firefox/128.0。
+>    答：来源 IP：`127.0.0.1`；
+User-Agent：`Mozilla/5.0 (X11; Linux x86_64) Firefox/128.0`、`curl/8.5.0`。
 >
 > 2. 仅依据“404 数量较多”判断攻击，会遗漏哪些信息？
 >
->    答：仅依靠 404 数量无法区分来源 IP、UA 特征、请求路径类型；会漏掉短时间批量请求、注入 payload、403 后台探测这类攻击线索，也无法区分是攻击者扫描还是普通用户访问不存在页面。
+>    答：① 会遗漏返回 400、403 的攻击流量（比如 sqlmap 注入探测返回 400、Nikto 访问 /admin 返回 403，这些不是 404，但属于攻击）；② 无法区分 IP 来源，分不清是正常访问产生的 404 还是扫描器产生的 404；③ 无法识别扫描器特征 UA（Nikto、sqlmap），缺少 UA 特征判断；④ 无法看请求路径特征，不能区分是正常资源不存在还是敏感路径探测；⑤ 无法识别流量时间特征，看不到攻击请求短时间集中爆发的特点。
 
 ---
 
@@ -633,15 +635,11 @@ sudo tail -n 20 /var/log/nginx/error.log
 >
 > 1. 时间线覆盖了哪些关键请求？
 >
->    答：> 1. 时间线覆盖：2 条 SQL 注入探测、6 条 Nikto 敏感路径扫描、1 条伪装浏览器 UA 的 wp-login 探测；同时包含`127.0.0.1`的正常访问请求。
-
->
+>    答：包含本机 127.0.0.1 的正常业务相关访问请求；来自 203.0.113.50 的 sqlmap SQL 注入探测、Nikto 多路径扫描、敏感配置文件`.env`探测、备份文件`config.php.bak`探测、后台`/admin`路径探测、nginx 状态页`/server-status`探测、WordPress`/wp-login.php`探测、`/../../etc/passwd`路径穿越探测，以及 UA 伪装为 Mozilla/5.0 的探测请求。
 >
 > 2. 结论属于哪一项？依据是什么？排除了哪种可能？
 >
->    答：结论：**扫描 / 探测，未发现成功利用迹象**。
->依据：`203.0.113.50`的全部 9 条探测请求返回码均为 400、403、404，没有敏感探测路径返回 200；auth.log 无该 IP 的 SSH 登录记录，nginx error.log 无异常报错。
->排除了攻击成功利用、拿到权限、读取敏感文件的可能；证据边界：该结论仅基于 nginx access.log 和本演示站固定返回配置，没有完成主机侧完整取证。
+>    答：结论：基于 nginx_access 日志和静态演示站配置，未发现成功利用迹象；本实验未进行主机侧取证，不能据此排除主机侧异常。依据：攻击源 203.0.113.50 的全部 web 请求返回均为 400、403、404，没有返回 200 的敏感路径；`auth.log`中没有 203.0.113.50 对应的 SSH 成功登录记录，nginx error.log 无 8083 站点异常错误。排除了：Web 侧攻击成功、敏感文件被读取、Web 漏洞利用成功的可能性；但无法排除主机层面其他攻击、后门、持久化等风险。
 
 ---
 
@@ -650,15 +648,15 @@ sudo tail -n 20 /var/log/nginx/error.log
 | 项目 | 记录 |
 | :--- | :--- |
 | 攻击来源 IP |203.0.113.50 |
-| 扫描器 User-Agent（自报，不能证明真实工具） |sqlmap/1.8、Nikto/2.5.0、Mozilla/5.0（伪装） |
-| 被探测路径（至少 5 个） |/login?user=admin'OR'1'='1、/.env、/admin、/wp-login.php、/../../etc/passwd、/config.php.bak、/server-status |
-| 攻击来源 `203.0.113.50` 的状态码分布（200/400/403/404/500 各多少） |200：0；400：3；403：2；404：4；500：0 |
-| 正常流量来源（`127.0.0.1` 手工/脚本请求、宿主机浏览器等） | 127.0.0.1|
-| 攻击时间范围 | |
-| 结论（扫描/疑似成功/证据不足） |29/Oct/2026 16:14:20 附近 |
-| 关键 LogQL |`{job="nginx_access"}= "server_port=8083"、sum by (remote_addr) (count_over_time({job="nginx_access"}= "server_port=8083"pattern <remote_addr> - <_> [<_>] "<method> <path> <_>" <status> <_> "<_>" "<http_user_agent>" server_port=8083 [15m]))` |
-| 证据截图 |lab8-overview.png、lab8-top-ip.png、lab8-scanner.png、lab8-paths.png、lab8-timeline.png |
-| 处置建议（封 IP、限速、WAF、告警） |1. WAF 添加规则拦截`../`路径穿越、单引号注入特征；2. 配置 Loki 告警，短时间内陌生 IP 批量访问敏感路径触发告警；3. 临时封禁攻击 IP`203.0.113.50`；4. 禁止外网访问`/server-status`这类敏感页面；5. 网站根目录不存放`.env`、`.bak`备份文件 |
+| 扫描器 User-Agent（自报，不能证明真实工具） | sqlmap/1.8、Nikto/2.5.0、Mozilla/5.0（伪装）|
+| 被探测路径（至少 5 个） | `/login?user=admin'OR'1'='1`、`/.env`、`/config.php.bak`、`/admin`、`/server-status`、`/wp-login.php`、`/../../etc/passwd`|
+| 攻击来源 `203.0.113.50` 的状态码分布（200/400/403/404/500 各多少） |200：0；400：2；403：2；404：5；500：0 |
+| 正常流量来源（`127.0.0.1` 手工/脚本请求、宿主机浏览器等） |127.0.0.1（本机） |
+| 攻击时间范围 |2026-10-31 17:10:20.065 ~ 2026-10-31 17:10:21.082 |
+| 结论（扫描/疑似成功/证据不足） |扫描，未发现利用成功 |
+| 关键 LogQL | `{job="nginx_access"}= "server_port=8083"="203.0.113.50"`<br>`{job="nginx_access"}= "server_port=8083" !="203.0.113.50"`|
+| 证据截图 | Grafana Explore 日志截图（时间升序的攻击日志、正常访问日志）|
+| 处置建议（封 IP、限速、WAF、告警） |WAF 添加该 IP 告警与拦截策略；临时封禁攻击 IP；对异常高频探测行为配置限速；持续监控访问日志 |
 
 ---
 
@@ -668,15 +666,15 @@ sudo tail -n 20 /var/log/nginx/error.log
 
 1. `sqlmap/1.8` User-Agent 和 `/.env` 请求分别能提供什么信息？仅凭这两条日志能否判断攻击已经成功？还需要哪些证据？
 
-   > 填写：sqlmap/1.8 UA 说明客户端自报为注入工具，/.env请求代表探测密钥配置文件；仅凭两条日志不能判定攻击成功。还需要：返回 200、响应内容包含敏感配置、后续出现数据泄露、登录成功等证据。
+   > 填写：sqlmap 的 UA 说明攻击者在使用 sqlmap 做注入探测；请求`/.env`代表尝试读取环境配置文件。仅这两条日志不能判定攻击成功，还需要状态码 200、文件内容读取记录、数据库查询结果、权限变更日志等证据。
 
 2. 为什么不能以 404 数量作为入侵判断依据？还应检查哪些字段或日志源？
 
-   > 填写：普通用户访问不存在页面也会产生 404，404 本身不代表攻击。还需要检查来源 IP、请求 UA、请求路径特征、请求时间密度；同时核对 auth.log、nginx error.log 等其他日志源交叉验证。
+   > 填写：404 只是资源不存在，很多正常爬虫、误访问也会产生大量 404，本身不代表入侵。还需要检查响应状态码 200、文件访问日志、认证日志 auth.log、系统审计日志、进程日志等。
 
 3. 攻击者将 User-Agent 伪装为正常 Chrome 后，哪些行为特征仍可用于识别扫描？
 
-   > 填写：短时间内批量请求大量后台、敏感文件、注入类路径；请求路径集中在扫描器常用探测清单；请求频率极高、无正常业务浏览逻辑；缺少正常访问的 referer 跳转关系。
+   > 填写：可以看短时间超高频率请求、访问大量非常规敏感路径、请求 payload 特征、异常请求参数、请求间隔极短等行为特征，不受 UA 伪装影响。
 
 ---
 
@@ -722,7 +720,7 @@ log_format course_web '$remote_addr - $remote_user [$time_local] "$request" '
 ```
 
 问题：若日志改为 JSON 格式，`pattern` 与 `json` 解析器哪一种更稳妥？说明理由。
-答：`json`解析器更稳妥。JSON 格式字段结构固定，json 解析器直接按 key 取值，不受空格、特殊字符顺序干扰；pattern 是按文本位置匹配，一旦日志字段顺序、内容里出现空格，就会解析失败。
+
 ---
 
 ## 十一、截图与提交
