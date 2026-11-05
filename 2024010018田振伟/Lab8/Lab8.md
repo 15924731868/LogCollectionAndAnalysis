@@ -276,7 +276,7 @@ systemctl status alloy --no-pager
 >
 > 1. 8083 站点是否验证通过？`/`、`/admin`、`/.env` 的返回状态码分别是什么？
 >
->    答：8083 站点验证通过；`/` 返回状态码 `200`，`/admin` 返回状态码 `403`，`/.env` 返回状态码 `403`
+>    答：8083 站点验证通过；`/` 返回状态码 `200`，`/admin` 返回状态码 `403`，`/.env` 返回状态码 `404`
 >
 > 2. `{job="nginx_access"} |= "server_port=8083"` 包含哪些正常请求？来源 IP 是什么？若宿主机无法访问，使用哪两条请求作为对照？
 >
@@ -480,7 +480,7 @@ sum by (http_user_agent) (
 >
 > 2. 同一 User-Agent 对应多少条请求？请求了哪些路径？
 >
->    答：`Nikto/2.5.0`：共 5 条；请求路径：`/wp-login.php`、`/server-status`、`/admin`、`/config.php.bak`、`/.env` `sqlmap/1.8`：共 2 条；请求路径：`/login?user=admin'OR'1'='1` `Mozilla/5.0 (Windows NT 10.0; Win64; x64) … Edg/156.0.0.0`：共 1 条；请求路径：`/` `Mozilla/5.0 (X11; Linux x86_64) Firefox/128.0`：共 2 条；请求路径：`/`、`/api/orders?id=1` `Mozilla/5.0`：共 1 条；请求路径：`/wp-login.php` `-`（空 UA）：共 1 条；请求路径：`/../../etc/passwd`
+>    答：`Nikto/2.5.0`：共 5 条；请求路径：`/wp-login.php`、`/server-status`、`/admin`、`/config.php.bak`、`/.env`  `sqlmap/1.8`：共 2 条； 请求路径：`/login?user=admin'OR'1'='1` `Mozilla/5.0 (Windows NT 10.0; Win64; x64) … Edg/156.0.0.0`：共 1 条；请求路径：`/` `Mozilla/5.0 (X11; Linux x86_64) Firefox/128.0`：共 2 条；请求路径：`/`、`/api/orders?id=1` `Mozilla/5.0`：共 1 条；请求路径：`/wp-login.php` `-`（空 UA）：共 1 条；请求路径：`/../../etc/passwd`
 
 ![扫描器 UA](imgs/lab8-scanner.png)
 
