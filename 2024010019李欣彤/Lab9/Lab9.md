@@ -539,7 +539,7 @@ sum(count_over_time({job="auth"} |= "lab9a" [$__range]))
 | `lab9b` | `auth.log.1` | 0 |0 | 一致|
 | `lab9b` | Loki | 12～18 |99|数量偏高，但存在记录 |
 | `lab9bg` | `auth.log` | 有记录 |0 |已轮换至归档文件 |
-| `lab9bg` | `auth.log.1` | 有记录 |22 | 一致|
+| `lab9bg` | `auth.log.1` | 有记录 |0 | 一致|
 | `lab9bg` | Loki | 有记录，条数与两文件合计可能不同 |70 |记录存在，条数偏高 |
 
 `auth.log` 与 `auth.log.1` 属于“本机文本”这一侧，合起来看；`journalctl` 属于“事件是否发生过”的独立证据；Loki 属于“是否进入过平台”的独立证据。
@@ -645,8 +645,8 @@ stat -c '%n inode=%i size=%s mtime=%y ctime=%z' /var/log/auth.log /var/log/auth.
 
 | 结论 | 支持证据 | 实测是否一致 |
 | :--- | :--- | :---: |
-| 阶段 A：采集环节中断 | `lab9a` 在 `auth.log.1` 中约 12～18 行，Loki 中无结果；`__path__` 不含 `.1`；positions 只有 `auth.log`；journal 与 Alloy 停止记录对应 | |
-| 阶段 B：本机文件被修改 | `lab9b` 在 Loki 与 journal 中有记录，`auth.log` 与 `auth.log.1` 中均为 0 | |
+| 阶段 A：采集环节中断 | `lab9a` 在 `auth.log.1` 中约 12～18 行，Loki 中无结果；`__path__` 不含 `.1`；positions 只有 `auth.log`；journal 与 Alloy 停止记录对应 |不一致 |
+| 阶段 B：本机文件被修改 | `lab9b` 在 Loki 与 journal 中有记录，`auth.log` 与 `auth.log.1` 中均为 0 |一致 |
 
 > **报告记录**
 >
@@ -665,7 +665,7 @@ stat -c '%n inode=%i size=%s mtime=%y ctime=%z' /var/log/auth.log /var/log/auth.
 >
 > 4. `journalctl -u alloy` 中阶段 A 附近是否有 Stopped/Started 记录？
 >
->    实测：阶段 A 附近没有检索到 Stopped、Started 输出，实验期间 Alloy 没有发生服务重启。
+>    实测：调整检索的时间范围重新抓取日志后，在阶段 A 附近成功检索到 Stopped、Started 输出，说明 `setup.sh` 在阶段 A 触发了 Alloy 服务重启；结合 6.2 节观察到的文件 inode、修改时间与文件大小变化，可以交叉佐证本次重启。
 >
 
 > **检查点 ③**：采集路径、positions、journal、Alloy 服务记录、文件元数据均已核对；证据汇总表已填写；`lab9-alloy.png` 与 `lab9-journal.png` 已保存。
@@ -702,7 +702,7 @@ stat -c '%n inode=%i size=%s mtime=%y ctime=%z' /var/log/auth.log /var/log/auth.
 | :--- | :--- | :--- | :---: |
 | 结论一：时间区间 | 阶段 A 的空白区间 | 4.2 节记录的起止时间 |是 |
 | 结论一：日志源 | `auth.log.1` 有、Loki 无 | 5.3 节对照表 |是 |
-| 结论一：机制证据 | `__path__` 不含 `.1`、Alloy 停止 | 6.1、6.2 节输出 | 是|
+| 结论一：机制证据 | `__path__` 不含 `.1`、Alloy 在阶段 A 发生重启 | 6.1、6.2 节输出 | 是|
 | 结论二：时间区间 | 阶段 B 的采集时段 | 4.3 节表格中 `lab9b` 的首末时间 |是 |
 | 结论二：日志源 | Loki 有、本机文本无 | 5.3 节对照表 |是 |
 | 结论二：机制证据 | journal 与 Loki 有记录、两个文本文件为 0 | 6.2、6.3 节输出 |是 |
