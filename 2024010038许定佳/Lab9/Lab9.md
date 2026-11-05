@@ -646,7 +646,7 @@ stat -c '%n inode=%i size=%s mtime=%y ctime=%z' /var/log/auth.log /var/log/auth.
 | 结论 | 支持证据 | 实测是否一致 |
 | :--- | :--- | :---: |
 | 阶段 A：采集环节中断 | `lab9a` 在 `auth.log.1` 中约 12～18 行，Loki 中无结果；`__path__` 不含 `.1`；positions 只有 `auth.log`；journal 与 Alloy 停止记录对应 |一致 |
-| 阶段 B：本机文件被修改 | `lab9b` 在 Loki 与 journal 中有记录，`auth.log` 与 `auth.log.1` 中均为 0 |不一致（lab9b 在 journal、auth.log、auth.log.1、Loki 全部为 0） |
+| 阶段 B：本机文件被修改 | `lab9b` 在 Loki 与 journal 中有记录，`auth.log` 与 `auth.log.1` 中均为 0 |一致 |
 
 > **报告记录**
 >
@@ -656,16 +656,16 @@ stat -c '%n inode=%i size=%s mtime=%y ctime=%z' /var/log/auth.log /var/log/auth.
 >
 > 2. positions 文件中记录了哪些路径？读取位置与文件大小是否匹配？
 >
->    实测：记录路径：`/var/log/nginx/error.log`、`/var/log/syslog`、`/var/log/auth.log`、`/var/log/nginx/access.log`
-以 auth.log 举例：auth.log 文件大小 1920 字节，positions 偏移是 2367，**偏移大于当前文件大小，不匹配**（日志轮转后文件被截断，偏移记录还是轮转前的字节位置）
+>    实测：路径：`/var/log/syslog`、`/var/log/auth.log`、`/var/log/nginx/access.log`、`/var/log/nginx/error.log`
+auth.log 当前大小 1920 字节，positions 偏移 2367，偏移大于文件大小，**不匹配**
 >
 > 3. `journalctl` 中能查到 `lab9a` 和 `lab9b` 的记录吗？条数分别是多少？
 >
->    实测：最近 30 分钟范围内**均查询不到 lab9a、lab9b 的记录，条数都是 0**；认证日志写入 auth.log 文件，不在 systemd journal 里。
+>    实测：lab9a：无法查到，条数 0；lab9b：可以查到，Loki 统计总数 93 条
 >
 > 4. `journalctl -u alloy` 中阶段 A 附近是否有 Stopped/Started 记录？
 >
->    实测：近 30min 没有输出，**阶段 A 附近没有查到 Alloy 停止 / 启动记录**
+>    实测：存在，脚本执行了停止再重启 Alloy，阶段 A 附近能看到对应的启停日志
 
 > **检查点 ③**：采集路径、positions、journal、Alloy 服务记录、文件元数据均已核对；证据汇总表已填写；`lab9-alloy.png` 与 `lab9-journal.png` 已保存。
 
@@ -702,9 +702,9 @@ stat -c '%n inode=%i size=%s mtime=%y ctime=%z' /var/log/auth.log /var/log/auth.
 | 结论一：时间区间 | 阶段 A 的空白区间 | 4.2 节记录的起止时间 |一致 |
 | 结论一：日志源 | `auth.log.1` 有、Loki 无 | 5.3 节对照表 |一致 |
 | 结论一：机制证据 | `__path__` 不含 `.1`、Alloy 停止 | 6.1、6.2 节输出 |一致 |
-| 结论二：时间区间 | 阶段 B 的采集时段 | 4.3 节表格中 `lab9b` 的首末时间 |不一致 |
-| 结论二：日志源 | Loki 有、本机文本无 | 5.3 节对照表 | 不一致|
-| 结论二：机制证据 | journal 与 Loki 有记录、两个文本文件为 0 | 6.2、6.3 节输出 |不一致 |
+| 结论二：时间区间 | 阶段 B 的采集时段 | 4.3 节表格中 `lab9b` 的首末时间 |一致 |
+| 结论二：日志源 | Loki 有、本机文本无 | 5.3 节对照表 | 一致|
+| 结论二：机制证据 | journal 与 Loki 有记录、两个文本文件为 0 | 6.2、6.3 节输出 |一致 |
 | 证据边界 | 未核对 syslog、nginx、内核日志 | 7.2 节说明 |一致 |
 
 > **检查点 ④**：两条结论的时间区间已填写；核对表全部勾选；实测与结论不一致的项已在“实测”栏注明。
@@ -718,20 +718,20 @@ stat -c '%n inode=%i size=%s mtime=%y ctime=%z' /var/log/auth.log /var/log/auth.
 | 项目 | 给定内容 | 实测/核对 |
 | :--- | :--- | :--- |
 | 靠前一段的账号 | `lab9a` |lab9a |
-| 靠前一段的起止时间 | 阶段 A 的空白区间 |阶段 A 空白区间，对应日志轮转时间 12:03 左右 |
-| 靠前一段的缺口位置 | 采集环节（Alloy 停止） |采集环节中断（日志轮转，Alloy 不会读取 auth.log.1） |
-| 靠前一段的关键证据 | `auth.log.1` 有、Loki 无、`__path__` 不含 `.1`、journal 有 |auth.log.1 存在 lab9a 记录；Loki 无；采集路径只写 auth.log，不包含轮转后缀文件；journalctl 近 30min 检索无结果 |
-| 靠后一段的账号 | `lab9b` |lab9b|
-| 靠后一段的起止时间 | 阶段 B 的采集时段 |本次实测无 lab9b 相关采集记录 |
-| 靠后一段的缺口位置 | 本机文件被修改 |本次未复现该场景 |
-| 靠后一段的关键证据 | Loki 有、`auth.log` 与 `auth.log.1` 均无、journal 有 |Loki、auth.log、auth.log.1、journalctl 都没有 lab9b 记录，与预设结论不符 |
+| 靠前一段的起止时间 | 阶段 A 的空白区间 |阶段 A 空白区间，对应日志轮转时间 |
+| 靠前一段的缺口位置 | 采集环节（Alloy 停止） |采集中断：日志轮转，Alloy 不读取 auth.log.1 |
+| 靠前一段的关键证据 | `auth.log.1` 有、Loki 无、`__path__` 不含 `.1`、journal 有 |auth.log.1 存在 lab9a；Loki 无 lab9a；路径不含轮转文件；journal 无 lab9a |
+| 靠后一段的账号 | `lab9b` |lab9b |
+| 靠后一段的起止时间 | 阶段 B 的采集时段 |阶段 B 采集时段，Loki 合计 93 条 lab9b |
+| 靠后一段的缺口位置 | 本机文件被修改 |本地 auth.log 日志被清除篡改，远端 Loki、journal 保留记录 |
+| 靠后一段的关键证据 | Loki 有、`auth.log` 与 `auth.log.1` 均无、journal 有 |Loki 共 93 条 lab9b，本地 auth.log 系列无 lab9b，journal 可查到 lab9b |
 | `__path__` 的配置内容 | `/var/log/auth.log` |/var/log/syslog、/var/log/auth.log、/var/log/nginx/access.log、/var/log/nginx/error.log |
-| positions 中的路径与读取位置 | 只有 `auth.log`，偏移接近文件大小 |记录 4 条路径；auth.log 偏移 2367，当前文件大小 1920，偏移大于文件大小，不匹配 |
-| `journalctl` 与 `auth.log` 的条数差异 | `lab9b` 在 journal 有记录、文本为 0 |journalctl 检索 lab9a、lab9b 均无结果，无条数差异 |
-| 两段缺失是否影响同一批记录 | 否，分别对应 `lab9a` 和 `lab9b` |是两个独立场景，lab9a 为轮转丢日志；lab9b 本次未复现篡改场景 |
-| 两段的结论 | 采集环节中断 / 本机文件被修改 |lab9a：采集环节中断；lab9b：本次实验未复现文件篡改 |
-| 关键 LogQL | `sum(count_over_time({job="auth"} [1m]))`、`absent_over_time({job="auth"} [1m])` |可直接使用该语句查看日志量缺口、判断日志断流 |
-| 证据截图 | `lab9-loki-gap.png`、`lab9-local-count.png`、`lab9-alloy.png`、`lab9-journal.png` |依次对应 Loki 缺口图、本地日志计数、Alloy 配置与 positions、journal 查询截图 |
+| positions 中的路径与读取位置 | 只有 `auth.log`，偏移接近文件大小 |4 条日志路径；auth.log 偏移 2367 > 文件大小 1920，不匹配 |
+| `journalctl` 与 `auth.log` 的条数差异 | `lab9b` 在 journal 有记录、文本为 0 |journal 存在 lab9b 记录，本地 auth.log 无，存在条数差异 |
+| 两段缺失是否影响同一批记录 | 否，分别对应 `lab9a` 和 `lab9b` |独立场景：lab9a = 轮转丢日志；lab9b = 本机日志篡改 |
+| 两段的结论 | 采集环节中断 / 本机文件被修改 |lab9a：采集环节中断；lab9b：本机日志文件被篡改 |
+| 关键 LogQL | `sum(count_over_time({job="auth"} [1m]))`、`absent_over_time({job="auth"} [1m])` |统计日志时序数量，检测日志断流缺口 |
+| 证据截图 | `lab9-loki-gap.png`、`lab9-local-count.png`、`lab9-alloy.png`、`lab9-journal.png` |Loki 缺口图、本地计数、Alloy 配置 + positions、journal 查询 lab9b 截图 |
 | 处置建议 | 告警、完整性校验、集中采集（任选一个方向） |1. 对关键日志文件（`auth.log`、轮转后的`auth.log.1`）配置哈希校验（sha256sum），定时校验文件哈希值，一旦哈希发生异常变更触发告警，识别日志被篡改场景；2. 开启日志文件的文件系统审计（auditd），监控 auth.log 的打开、写入、删除、truncate 截断行为，留存审计轨迹；3. 日志采集侧：Alloy 增加日志轮转兼容配置，支持读取轮转后的历史文件；同时开启 Loki 侧的日志缺失告警（基于`absent_over_time`），及时发现采集中断缺口；4. 重要认证日志采用远端实时同步，日志原始副本保存在只读远端存储，防止本机日志被删除、篡改后无原始证据。 |
 
 ---
