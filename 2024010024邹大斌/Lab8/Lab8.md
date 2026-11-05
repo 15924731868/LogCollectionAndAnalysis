@@ -611,7 +611,7 @@ User-Agent：Mozilla/5.0 (X11; Linux x86_64) Firefox/128.0（Firefox 浏览器�
 | 2026-11-05 09:03:11 | 203.0.113.50 | GET /wp-login.php | 404 | WordPress 后台探测；Nikto/2.5.0 |
 | 2026-11-05 09:03:11 | 203.0.113.50 | GET /../etc/passwd | 400 | 路径穿越读取 passwd；无 UA |
 | 2026-11-05 09:03:11 | 203.0.113.50 | GET /wp-login.php | 404 | WordPress 后台探测；伪装 Mozilla/5.0 |
-
+| :--- | :--- | :--- | :--- | :--- |
 ![攻击时间线](imgs/lab8-timeline.png)
 
 ### 6.2 结论
