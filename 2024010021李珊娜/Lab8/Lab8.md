@@ -354,9 +354,9 @@ sudo tail -n 30 /var/log/nginx/access.log
 | :--- | :--- |
 | When 什么时候 |29/Oct/2026:08:12:23 +0800 |
 | Where 在哪里 |本机虚拟机 nginx 服务，标签host=lsn-VMware-Virtual-Platform，日志源/var/log/nginx/access.log |
-| Who 谁 |来源 IP 127.0.0.1，User-Agent 自报为Mozilla/5.0 (X11; Linux x86_64) Firefox/128.0；该 UA 由 curl -A 设置 |
-| What 做了什么 | 向`/api/orders`路径，携带参数`id=1`发起 GET 请求|
-| Result 结果如何 | 服务返回 200，响应内容{"ok":true}，Content-Type 为 application/octet-stream，接口正常响应|
+| Who 谁 |来源 IP 203.0.113.50，User-Agent 自报为`sqlmap/1.8`；该 UA 由 curl -A 设置，不能据此认定真实运行 sqlmap 工具 |
+| What 做了什么 | 向`/login`路径发送携带 SQL 注入 payload `admin'OR'1'='1` 的 GET 请求，尝试 SQL 注入探测|
+| Result 结果如何 |演示站对 `/login` 固定返回 `400`；该状态码只说明请求命中了对应 location，不能证明注入被识别、拦截或者注入成功|
 
 示例仅说明字段填写方式，报告应使用实际查询到的日志：
 
