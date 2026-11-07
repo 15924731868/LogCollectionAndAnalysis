@@ -26,10 +26,10 @@ students:
     name: 刘珈宁
     github: 2024010005ljn
     active: true
-  "2024010006":
-    name: 黄璇
-    github: xuan244
-    active: true
+  # "2024010006":
+  #   name: 黄璇
+  #   github: xuan244
+  #   active: true
   "2024010007":
     name: 邱龙菲
     github: 2024010007qlf
