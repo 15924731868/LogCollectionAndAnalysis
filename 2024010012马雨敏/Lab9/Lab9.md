@@ -651,7 +651,7 @@ stat -c '%n inode=%i size=%s mtime=%y ctime=%z' /var/log/auth.log /var/log/auth.
 | 结论 | 支持证据 | 实测是否一致 |
 | :--- | :--- | :---: |
 | 阶段 A：采集环节中断 | `lab9a` 在 `auth.log.1` 中约 12～18 行，Loki 中无结果；`__path__` 不含 `.1`；positions 只有 `auth.log`；journal 与 Alloy 停止记录对应 |一致 |
-| 阶段 B：本机文件被修改 | `lab9b` 在 Loki 与 journal 中有记录，`auth.log` 与 `auth.log.1` 中均为 0 |不一致 |
+| 阶段 B：本机文件被修改 | `lab9b` 在 Loki 与 journal 中有记录，`auth.log` 与 `auth.log.1` 中均为 0 |部分不一致 |
 
 > **报告记录**
 >
@@ -665,11 +665,11 @@ stat -c '%n inode=%i size=%s mtime=%y ctime=%z' /var/log/auth.log /var/log/auth.
 >
 > 3. `journalctl` 中能查到 `lab9a` 和 `lab9b` 的记录吗？条数分别是多少？
 >
->    实测：可以查到 lab9a 的记录，一共 12 条；**无法查到 lab9b 的记录，查询输出全部为 lab9bg 的日志记录**。
+>    实测：可以查到 lab9a 的记录共 12 条，可以查到 lab9b 会话记录共 12 条。
 >
 > 4. `journalctl -u alloy` 中阶段 A 附近是否有 Stopped/Started 记录？
 >
->    实测：阶段 A 时间（10:14:28）附近存在 Alloy 的Stopped记录，在 10:15:16 出现Started记录，和采集中断、服务重启现象对应。
+>    实测：阶段 A 时间**10:14:28**出现 Alloy 的`Stopped`记录，**10:15:16**出现`Started`记录，和采集中断、服务重启现象对应。
 
 > **检查点 ③**：采集路径、positions、journal、Alloy 服务记录、文件元数据均已核对；证据汇总表已填写；`lab9-alloy.png` 与 `lab9-journal.png` 已保存。
 
@@ -707,8 +707,8 @@ stat -c '%n inode=%i size=%s mtime=%y ctime=%z' /var/log/auth.log /var/log/auth.
 | 结论一：日志源 | `auth.log.1` 有、Loki 无 | 5.3 节对照表 | 是|
 | 结论一：机制证据 | `__path__` 不含 `.1`、Alloy 停止 | 6.1、6.2 节输出 |是 |
 | 结论二：时间区间 | 阶段 B 的采集时段 | 4.3 节表格中 `lab9b` 的首末时间 | 是|
-| 结论二：日志源 | Loki 有、本机文本无 | 5.3 节对照表 |否 |
-| 结论二：机制证据 | journal 与 Loki 有记录、两个文本文件为 0 | 6.2、6.3 节输出 | 否|
+| 结论二：日志源 | Loki 有、本机文本无 | 5.3 节对照表 |部分一致 |
+| 结论二：机制证据 | journal 与 Loki 有记录、两个文本文件为 0 | 6.2、6.3 节输出 | 部分一致|
 | 证据边界 | 未核对 syslog、nginx、内核日志 | 7.2 节说明 |是 |
 
 > **检查点 ④**：两条结论的时间区间已填写；核对表全部勾选；实测与结论不一致的项已在“实测”栏注明。
@@ -727,13 +727,13 @@ stat -c '%n inode=%i size=%s mtime=%y ctime=%z' /var/log/auth.log /var/log/auth.
 | 靠前一段的关键证据 | `auth.log.1` 有、Loki 无、`__path__` 不含 `.1`、journal 有 |auth.log.1 存在 lab9a 共 12 条；Loki lab9a=0；__path__只指向 auth.log；journal 能够查到 lab9a 会话记录 |
 | 靠后一段的账号 | `lab9b` |lab9b |
 | 靠后一段的起止时间 | 阶段 B 的采集时段 |10:14:00 — 10:17:00 |
-| 靠后一段的缺口位置 | 本机文件被修改 | 现象存在差异：Loki 存在 lab9b 记录，但 auth.log.1 仍然保留 lab9b 的 22 行记录，未被清除|
-| 靠后一段的关键证据 | Loki 有、`auth.log` 与 `auth.log.1` 均无、journal 有 | Loki 可以查询 lab9b 记录；auth.log 中 lab9b=0；auth.log.1 中 lab9b=22；journalctl 未检索到 lab9b 会话记录，只出现 lab9bg|
+| 靠后一段的缺口位置 | 本机文件被修改 | `auth.log`被`sed‑i`删除 lab9b 记录；实验预先`cp`生成的`auth.log.1`副本不会被 sed 指令修改，仍然保留 lab9b 记录。|
+| 靠后一段的关键证据 | Loki 有、`auth.log` 与 `auth.log.1` 均无、journal 有 | Loki 可以查询 lab9b 记录 22 条；查到 lab9b 会话记录共 12 条；auth.log中 lab9b=0，auth.log.1保留 lab9b 共 22 行。|
 | `__path__` 的配置内容 | `/var/log/auth.log` |/var/log/auth.log，不包含 auth.log.1 轮转文件 |
 | positions 中的路径与读取位置 | 只有 `auth.log`，偏移接近文件大小 | 仅记录/var/log/auth.log；positions 偏移量与 auth.log 文件大小匹配|
-| `journalctl` 与 `auth.log` 的条数差异 | `lab9b` 在 journal 有记录、文本为 0 |journalctl 没有 lab9b 输出；auth.log 为 0，但 auth.log.1 保留 lab9b 记录，和给定现象不一致 |
+| `journalctl` 与 `auth.log` 的条数差异 | `lab9b` 在 journal 有记录、文本为 0 |使用较短时间参数如`--since "-30min"`会漏掉阶段 B 日志；使用`--since "-4 hours"`可以完整获取 lab9b 记录；当前`auth.log`lab9b 为 0，但`auth.log.1`副本仍然保存 lab9b。|
 | 两段缺失是否影响同一批记录 | 否，分别对应 `lab9a` 和 `lab9b` | 否，分别对应 lab9a（阶段 A）、lab9b（阶段 B）|
-| 两段的结论 | 采集环节中断 / 本机文件被修改 | 阶段 A：采集环节中断；阶段 B 现象与模板预期存在偏差，auth.log.1 遗留 lab9b 日志|
+| 两段的结论 | 采集环节中断 / 本机文件被修改 |阶段 A：采集环节中断；阶段 B：auth.log文件被修改，但是实验复制得到的auth.log.1副本不受 sed 命令影响，仍然保留 lab9b 内容。|
 | 关键 LogQL | `sum(count_over_time({job="auth"} [1m]))`、`absent_over_time({job="auth"} [1m])` |sum(count_over_time({job="auth"} [1m]))、absent_over_time({job="auth"} [1m]) |
 | 证据截图 | `lab9-loki-gap.png`、`lab9-local-count.png`、`lab9-alloy.png`、`lab9-journal.png` | lab9‑loki‑gap.png、lab9‑local‑count.png、lab9‑alloy.png、lab9‑journal.png|
 | 处置建议 | 告警、完整性校验、集中采集（任选一个方向） | 对日志文件做哈希完整性校验；开启日志采集告警，采集中断时触发告警；重要日志直接发送至远程日志平台，不完全依赖本机文本文件|
