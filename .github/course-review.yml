@@ -419,3 +419,42 @@ assignments:
       - lab9-alloy.png 应显示 loki.source.file 的 __path__ 配置，以及 positions.yml 中的路径与偏移。能辨认路径为 /var/log/auth.log 且不含 .1 时视为完成；只截其中一处时，报告文字说明了另一项即可。
       - lab9-journal.png 应显示 journalctl 中 lab9b（或 lab9a）的会话记录，能辨认账号名与时间。结果为空、或只有命令没有输出时判为不完整。
       - 报告与截图的一致性：时间、条数、账号名、缺口方向与结论应一致，不要求逐字相同。报告称某个账号在某文件中为 0 而截图显示有记录、或结论方向与来源对照表矛盾时指出即可。核心证据整体缺失（既没有平台空白区间，也没有本机文件计数）时才判为不合格。
+  Lab10:
+    deadline: "2026-11-19T23:59:59+08:00"
+    grading:
+      mode: tiered
+      max_points: "10.00"
+    report_template: homework/Lab10/Lab10.md
+    required_files:
+      - Lab10.md
+      - imgs/lab10-df-before.png
+      - imgs/lab10-service-failed.png
+      - imgs/lab10-du.png
+      - imgs/lab10-fix.png
+    template_metrics:
+      enabled: true
+      report_file: Lab10.md
+      characters: ['#', '-', '*', '`', '|', '>']
+      max_file_bytes: 200000
+    vision_files:
+      - imgs/lab10-df-before.png
+      - imgs/lab10-service-failed.png
+      - imgs/lab10-du.png
+      - imgs/lab10-fix.png
+    review_points:
+      - 任务 1（3.1–3.2 节）：应确认 loki、grafana-server、alloy、rsyslog 为 active，Loki 的 /ready 返回 ready；3.1 节应写出 setup.sh 创建 256MB loop 镜像、挂载到 /var/log/course-demo、放入 220MB filler.bin，并说明写入器尚未启动。3.2 节应给出启动前的 df -h、df -i、mount、ls -lh，Use% 应低于 100%，IUse% 应很低；若 3.2 节已经 100%，说明写入器被提前启动或上一次实验残留，应停止服务、运行 restore.sh 后重做。
+      - 任务 2（4.1–4.3 节）：应执行 sudo systemctl start course-logwriter.service，观察到约 20 至 40 秒后 df 到 100% 或 Avail 为 0，服务变为 failed。4.2 节应粘贴 journalctl 或 /var/log/course-logwriter.err 中的真实 No space left on device，并说明 tail -c 300 app.log 可能看到没有换行的截断行。4.3 节应执行真实 dd，得到 No space left on device，并删除 test 文件；dd 与 tail 不要求截图，写出实际输出即可。
+      - 任务 3（5.1–5.3 节）：du -sh 应显示 filler.bin 约 220MB、app.log 约 20 至 30MB，最大文件是 filler.bin；df -i 的 IUse% 应很低，报告应明确排除 inode 耗尽。5.3 节应运行 lsof +L1；本实验服务已退出，查不到记录属于正常，报告应说明该命令用于“df 满但 du 很小”的场景，不能因为结果为空就认为该问题不存在。
+      - 任务 3（5.4–5.5 节）：5.4 节应在 Grafana 中用 {job="syslog"} |= "course-logwriter" 或再加 |= "write failed" 查到真实记录，写出时间范围、条数，并展开至少一条日志确认 job、filename、host 标签。Loki 不要求截图，但报告必须给出查询语句、条数与一条真实时间。应说明 app.log 本身不在 Alloy 采集路径中，Loki 看到的是 logger 写入 syslog 的失败记录，两者互为补充。5.5 节应粘贴实际时间并填满 4W1R 五格；把讲义示例时间当成本人结果时记为未完成。
+      - 任务 4（6.1–6.5 节）：应先 stop 并 reset-failed，再删除 filler.bin、truncate app.log，df 的 Use% 应明显下降；随后用 dd 验证可写，test 文件约 1MB，删除后空间恢复。报告应写出“只重启服务会再次写满”的根因分析和至少三条预防措施。6.5 节应运行 restore.sh，并确认 mount 中不再有 course-demo。
+      - 知识问答（第七节）：两题都应作答，每题 3 至 5 句。第 1 题应区分 df -h 的块使用与 df -i 的 inode 使用，说明 du 用于定位具体文件，lsof +L1 用于“已删除但仍被打开”的情形，并解释 df 与 du 出现差异的原因；第 2 题应说明轮转条件不等于轮转执行时机（logrotate 由定时任务触发），并从轮转执行频率、日志保留数量、磁盘容量规划、容量与失败监控四个方面给出改进。
+      - 审核范围：第三节至第七节为必做，第十节 4 张截图必交。第九节选读（logrotate 配置、容量监控、失败计数查询）不要求执行、作答或截图，未填选读不影响内容判定，报告仍应保留模板的章节结构。报告目录只应有 Lab10.md 与 imgs 下 4 张截图，不得复制 setup.sh、restore.sh、lablib.sh。
+      - 合理差异：文件系统编号、inode 总数、filler.bin 与 app.log 的精确大小、写满所需时间、Use% 的取整结果以本人环境为准；允许 filler.bin 在 215 至 225MB 之间、app.log 在 18 至 32MB 之间、Use% 显示 99% 或 100%、服务退出码为 1、lsof +L1 为空、Loki 中出现重复行。照抄讲义示例的时间（如 19:10:01）和数值、明显未核对本人输出时，记为未完成。
+      - 结论边界：本实验的证据来自 df、du、journal、服务错误日志、syslog 与 Loki，只覆盖本机文件系统容量和该服务的写入行为，不等同于完整的磁盘取证。报告把“没查到 lsof +L1”写成“从未存在删除未释放”，或把“Loki 没查到”写成“写入器没有失败”时，指出证据边界即可，不据此判不合格。
+    vision_review_points:
+      - 截图总要求：使用学生本人虚拟机内的电脑截图，命令与关键结果清晰可辨，能认出主机名、挂载点与命令输出。允许合理拼图、裁剪无关区域、只保留代表性输出，以及不同界面语言与主题；不得使用手机拍屏，不得出现密码、私钥或访问令牌。不得把讲义示例的时间与数值当成本人结果。
+      - lab10-df-before.png 应显示启动写入器之前的 df -h、df -i、mount 和 ls -lh 结果，Use% 应低于 100%，能辨认 /var/log/course-demo 与约 220MB 的 filler.bin。若截图已经 100%，判为不完整，应说明需要按 3.2 节重做。
+      - lab10-service-failed.png 应显示 systemctl status 的 failed 状态，以及 journalctl 或 .err 中的 No space left on device。两者可在同一张图中拼接，但必须能辨认服务名与错误原文；只有 status 没有错误、或只有 echo 文本时判为不完整。tail -c 300 与 dd 的输出写在报告里即可，不要求单独截图。
+      - lab10-du.png 应显示 du -sh * 与 df -h 的对比，能辨认 filler.bin 是最大文件且 df 为 100% 或 Avail 为 0。只显示 df、没有 du 结果，或只显示 du、没有容量状态时判为不完整。
+      - lab10-fix.png 应显示修复后的 df -h（Avail 大于 0、Use% 明显下降）和 dd 成功写入约 1MB 的 test 文件。只有 df、没有 dd 验证，或 dd 仍报 No space left on device 时判为不完整。
+      - 报告与截图的一致性：文件系统、大小、百分比、时间、查询与结论方向应一致，不要求逐字相同。报告称已查到 Loki 记录而缺少查询语句与条数、或报告数值与截图明显矛盾时指出即可。核心证据整体缺失（既没有满之前的 df，也没有 ENOSPC 与修复验证）时才判为不合格。
